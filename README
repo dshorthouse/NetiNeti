@@ -1,0 +1,67 @@
+DEPENDENCIES
+------------
+* nltk >= 2.09b3
+
+Neti-Neti taxon finder. 
+Input: Any text preferably in English
+Output: A list of Scientific Names in the text
+For technical questions and comments about the approach, contact lakella@mbl.edu
+For questions regarding webservices, contact ashipunova@mbl.edu
+
+To run it: 
+$ python neti-server.py
+
+To use webservice: 
+$ ruby webservices/ruby/taxon_finder_web_service.rb
+
+API:
+(use your server name instead of localhost:4567)
+http://localhost:4567/find?type=url&input=http://www.bacterio.cict.fr/d/desulfotomaculum.html
+or
+http://localhost:4567/find?type=text&input=%22Mus%20musculus%22
+
+Nnewlist.txt      --- "black list" for pre filtering, common words to decrease number of false positives
+README.DOC        --- this file
+millionnames.txt  --- big training list, run by default
+neg_names.txt     --- training list for negative examples
+netineti.py       --- Machine Learning based approach to find scientific names
+pictorialgeo.txt  --- training text w/o scientific names for negative examples
+species_train.txt --- small training list of positive examples, should be given as a argument to a NetiNetiTrain()
+
+Those files should be in the same directory as a server.
+
+Using from (phyton) server:
+
+from netineti import *                                                                               
+
+# for short training set, about 2 min on slow machine
+NN = NetiNetiTrain("species_train.txt")                                                              
+
+# for long training set, about 20 min on slow machine
+# NN = NetiNetiTrain()                                                                               
+
+nf = nameFinder(NN)                                                                                  
+
+Example Urls to try:
+-------------------
+
+New Species
+-----------
+http://www.sciencedaily.com/news/plants_animals/new_species/
+
+http://www.livescience.com/environment/top-10-new-species-1.html
+
+http://www.sciencedaily.com/releases/2010/04/100407104032.htm
+
+http://species.asu.edu/2009_species05
+
+BHL BOOKS
+---------
+http://ia311319.us.archive.org/3/items/americanseashell00abbo/americanseashell00abbo_djvu.txt
+
+http://ia341016.us.archive.org/3/items/britishinsectsge00westuoft/britishinsectsge00westuoft_djvu.txt
+
+
+
+Note: offsets do not work in this version.
+
