@@ -1,0 +1,765 @@
+************* Module netineti
+C: 72: Line too long (92/80)
+C: 76: Line too long (100/80)
+C: 81: Line too long (81/80)
+C: 98: Line too long (89/80)
+C: 99: Line too long (88/80)
+C:103: Line too long (96/80)
+C:105: Line too long (93/80)
+C:108: Line too long (90/80)
+C:110: Line too long (90/80)
+C:180: Line too long (121/80)
+C:182: Line too long (124/80)
+C:184: Line too long (121/80)
+C:186: Line too long (124/80)
+C:188: Line too long (139/80)
+C:191: Line too long (137/80)
+C:193: Line too long (123/80)
+C:194: Line too long (126/80)
+C:195: Line too long (129/80)
+C:196: Line too long (123/80)
+C:197: Line too long (126/80)
+C:198: Line too long (129/80)
+C:199: Line too long (133/80)
+C:200: Line too long (135/80)
+C:201: Line too long (133/80)
+C:207: Line too long (129/80)
+C:208: Line too long (142/80)
+C:215: Line too long (151/80)
+C:216: Line too long (174/80)
+C:226: Line too long (117/80)
+C:231: Line too long (115/80)
+C:234: Line too long (98/80)
+C:235: Line too long (100/80)
+C:240: Line too long (125/80)
+C:270: Line too long (103/80)
+C:275: Line too long (81/80)
+C:296: Line too long (82/80)
+C:320: Line too long (137/80)
+C:331: Line too long (127/80)
+C:332: Line too long (142/80)
+C:341: Line too long (123/80)
+C:352: Line too long (86/80)
+C:354: Line too long (91/80)
+C:356: Line too long (84/80)
+C:453: Line too long (219/80)
+C:460: Line too long (83/80)
+C:464: Line too long (85/80)
+C:486: Line too long (102/80)
+C:489: Line too long (148/80)
+C:494: Line too long (87/80)
+C:523: Line too long (81/80)
+C:531: Line too long (82/80)
+C:534: Line too long (90/80)
+C:543: Line too long (89/80)
+C:551: Line too long (96/80)
+C:552: Line too long (98/80)
+C:555: Line too long (101/80)
+F: 14: Unable to import 'nltk'
+R: 21:NetiNetiTrain: Too many instance attributes (11/7)
+C: 21:NetiNetiTrain: Missing docstring
+C: 23:NetiNetiTrain.__init__: Comma not followed by a space
+    def __init__(self,species_train="data/New_sp_contexts.txt",
+                     ^^
+                 irrelevant_text="data/pictorialgeo.txt",
+                 all_names="data/millionnames.txt", learning_algo = "NB",
+                 num_tok_train=10000, num_neg_tg=5000, context_span=1):
+R: 23:NetiNetiTrain.__init__: Too many arguments (8/5)
+C: 41:NetiNetiTrain._splitGet: Comma not followed by a space
+    def _splitGet(self,fileName):
+                      ^^
+C: 41:NetiNetiTrain._splitGet: Invalid name "_splitGet" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 41:NetiNetiTrain._splitGet: Invalid name "fileName" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 41:NetiNetiTrain._splitGet: Missing docstring
+C: 41:NetiNetiTrain._splitGet: Invalid name "fileName" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 45:NetiNetiTrain._splitGet: Comma not followed by a space
+        tokens = map(lambda x:x.strip(),tokens)
+                                       ^^
+W: 45:NetiNetiTrain._splitGet: Used builtin function 'map'
+R: 41:NetiNetiTrain._splitGet: Method could be a function
+R: 49:NetiNetiTrain._getTrainingData: Too many local variables (24/15)
+C: 49:NetiNetiTrain._getTrainingData: Invalid name "_getTrainingData" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 49:NetiNetiTrain._getTrainingData: Missing docstring
+C: 53:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "# contexts.. ",len(ptokens)
+                             ^^
+C: 56:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "# toks.. ",len(just_toks)
+                         ^^
+C: 59:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        ptokens = filter(lambda x: len(x) >0,ptokens)
+                                            ^^
+W: 59:NetiNetiTrain._getTrainingData: Used builtin function 'filter'
+C: 62:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "train toks .. ",len(ptokens)
+                              ^^
+C: 64:NetiNetiTrain._getTrainingData: Comma not followed by a space
+            name,context = tok.split("---",1)
+                ^^
+W: 69:NetiNetiTrain._getTrainingData: Catch "Exception"
+C: 72:NetiNetiTrain._getTrainingData: Comma not followed by a space
+            featuresets.append((self.taxon_features(name,context_array,index,span),'taxon'))
+                                                        ^^
+C: 76:NetiNetiTrain._getTrainingData: Comma not followed by a space
+                featuresets.append((self.taxon_features(abb_name,context_array,index,span),'taxon'))
+                                                                ^^
+C: 78:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "# pos features.. ",len(featuresets)
+                                 ^^
+C: 81:NetiNetiTrain._getTrainingData: Operator not preceded by a space
+        ndata=open(os.path.dirname(__file__) + "/" + self.irrelevant_text).read()
+             ^
+C: 84:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "trigrams.. ",len(neg_trigrams)
+                           ^^
+C: 89:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        for p,q,r in neg_trigrams:
+             ^^
+C: 89:NetiNetiTrain._getTrainingData: Invalid name "p" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 89:NetiNetiTrain._getTrainingData: Invalid name "q" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 89:NetiNetiTrain._getTrainingData: Invalid name "r" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 93:NetiNetiTrain._getTrainingData: Invalid name "tg" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 94:NetiNetiTrain._getTrainingData: Invalid name "bg" (should match [a-z_][a-z0-9_]{2,30}$)
+C: 98:NetiNetiTrain._getTrainingData: Comma not followed by a space
+                featuresets.append((self.taxon_features(bg,ntokens,inx,1),'not-a-taxon'))
+                                                          ^^
+C: 99:NetiNetiTrain._getTrainingData: Comma not followed by a space
+                featuresets.append((self.taxon_features(p,ntokens,inx,0),'not-a-taxon'))
+                                                         ^^
+C:101:NetiNetiTrain._getTrainingData: Operator not followed by a space
+                    tgc +=1
+                        ^^
+C:105:NetiNetiTrain._getTrainingData: Comma not followed by a space
+                    featuresets.append((self.taxon_features(tg,ntokens,inx,2),'not-a-taxon'))
+                                                              ^^
+C:108:NetiNetiTrain._getTrainingData: Comma not followed by a space
+                featuresets.append((self.taxon_features(q,ntokens,inx+1,0),'not-a-taxon'))
+                                                         ^^
+C:110:NetiNetiTrain._getTrainingData: Comma not followed by a space
+                featuresets.append((self.taxon_features(r,ntokens,inx+2,0),'not-a-taxon'))
+                                                         ^^
+C:113:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "bg tg negative features.. ",bgc+tgc
+                                          ^^
+C:114:NetiNetiTrain._getTrainingData: Comma not followed by a space
+        print "total examples.. ",len(featuresets)
+                                 ^^
+C:117:NetiNetiTrain._buildTable: Invalid name "_buildTable" (should match [a-z_][a-z0-9_]{2,30}$)
+C:117:NetiNetiTrain._buildTable: Missing docstring
+C:118:NetiNetiTrain._buildTable: Invalid name "ta" (should match [a-z_][a-z0-9_]{2,30}$)
+C:123:NetiNetiTrain._buildTable: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+C:125:NetiNetiTrain._buildTable: Invalid name "p" (should match [a-z_][a-z0-9_]{2,30}$)
+C:127:NetiNetiTrain._buildTable: Invalid name "tb" (should match [a-z_][a-z0-9_]{2,30}$)
+C:131:NetiNetiTrain._populateFeatures: Comma not followed by a space
+    def _populateFeatures(self,array,idx,start,stop,features,name):
+                              ^^
+R:131:NetiNetiTrain._populateFeatures: Too many arguments (7/5)
+C:131:NetiNetiTrain._populateFeatures: Invalid name "_populateFeatures" (should match [a-z_][a-z0-9_]{2,30}$)
+C:131:NetiNetiTrain._populateFeatures: Missing docstring
+W:140:NetiNetiTrain._populateFeatures: Catch "Exception"
+R:131:NetiNetiTrain._populateFeatures: Method could be a function
+C:144:NetiNetiTrain._incWeight: Comma not followed by a space
+    def _incWeight(self,st_wt,inc,val):
+                       ^^
+C:144:NetiNetiTrain._incWeight: Invalid name "_incWeight" (should match [a-z_][a-z0-9_]{2,30}$)
+C:144:NetiNetiTrain._incWeight: Missing docstring
+R:144:NetiNetiTrain._incWeight: Method could be a function
+C:150:NetiNetiTrain.taxon_features: Comma not followed by a space
+    def taxon_features(self,token,context_array,index,span):
+                           ^^
+R:150:NetiNetiTrain.taxon_features: Too many local variables (20/15)
+C:150:NetiNetiTrain.taxon_features: Missing docstring
+C:155:NetiNetiTrain.taxon_features: Operator not followed by a space
+        vowels =['a','e','i','o','u']
+               ^
+C:156:NetiNetiTrain.taxon_features: Comma not followed by a space
+        sv = ['a','i','s','m']#last letter (LL) weight
+                 ^^
+C:156:NetiNetiTrain.taxon_features: Invalid name "sv" (should match [a-z_][a-z0-9_]{2,30}$)
+C:157:NetiNetiTrain.taxon_features: Operator not followed by a space
+        sv1 =['e','o']# Reduced LL weight
+            ^
+C:169:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,0,-3,"end",features,"last3_first")
+                                   ^^
+C:170:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,1,-3,"end",features,"last3_second")
+                                   ^^
+C:171:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,2,-3,"end",features,"last3_third")
+                                   ^^
+C:172:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,0,-2,"end",features,"last2_first")
+                                   ^^
+C:173:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,1,-2,"end",features,"last2_second")
+                                   ^^
+C:174:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,2,-2,"end",features,"last2_third")
+                                   ^^
+C:175:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,0,0,"sc",features,"first_char")
+                                   ^^
+C:176:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,0,-1,"sc",features,"last_char")
+                                   ^^
+C:177:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,0,1,"sc",features,"second_char")
+                                   ^^
+C:178:NetiNetiTrain.taxon_features: Comma not followed by a space
+        self._populateFeatures(prts,0,-2,"sc",features,"sec_last_char")
+                                   ^^
+C:180:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts,0,-1,"sc",features,"lastltr_of_fw_in_sv") in sv
+                                                                         ^^
+C:181:NetiNetiTrain.taxon_features: Comma not followed by a space
+        string_weight = self._incWeight(string_weight,swt,j)
+                                                     ^^
+C:182:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["lastltr_of_fw_in_svl"] = j = self._populateFeatures(prts,0,-1,"sc",features,"lastltr_of_fw_in_svl") in sv1
+                                                                          ^^
+C:183:NetiNetiTrain.taxon_features: Comma not followed by a space
+        string_weight = self._incWeight(string_weight,swt-3,j)
+                                                     ^^
+C:184:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts,1,-1,"sc",features,"lastltr_of_sw_in_sv") in sv
+                                                                         ^^
+C:185:NetiNetiTrain.taxon_features: Comma not followed by a space
+        string_weight = self._incWeight(string_weight,swt,j)
+                                                     ^^
+C:186:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["lastltr_of_sw_in_svl"] = j = self._populateFeatures(prts,1,-1,"sc",features,"lastltr_of_sw_in_svl") in sv1
+                                                                          ^^
+C:187:NetiNetiTrain.taxon_features: Comma not followed by a space
+        string_weight = self._incWeight(string_weight,swt-3,j)
+                                                     ^^
+C:188:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["lastltr_of_tw_in_sv_or_svl"] = j = self._populateFeatures(prts,2,-1,"sc",features,"lastltr_of_tw_in_sv_or_svl") in sv+sv1
+                                                                                ^^
+C:189:NetiNetiTrain.taxon_features: Comma not followed by a space
+        string_weight = self._incWeight(string_weight,swt-2,j)
+                                                     ^^
+C:191:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_tw_in_sv_or_svl"] = self._populateFeatures(prts,2,-2,"sc",features,"2lastltr_of_tw_in_sv_or_svl") in sv+sv1
+                                                                             ^^
+C:193:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts,0,-2,"sc",features,"2lastltr_of_fw_in_sv") in sv
+                                                                          ^^
+C:194:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_fw_in_sv1"] = j = self._populateFeatures(prts,0,-2,"sc",features,"2lastltr_of_fw_in_sv1") in sv1
+                                                                           ^^
+C:195:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_fw_in_svlb"] = j = self._populateFeatures(prts,0,-2,"sc",features,"2lastltr_of_fw_in_svlb") in svlb
+                                                                            ^^
+C:196:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts,1,-2,"sc",features,"2lastltr_of_fw_in_sv") in sv
+                                                                          ^^
+C:197:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_sw_in_sv1"] = j = self._populateFeatures(prts,1,-2,"sc",features,"2lastltr_of_sw_in_sv1") in sv1
+                                                                           ^^
+C:198:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,1,-2,"sc",features,"2lastltr_of_fw_in_svlb") in svlb
+                                                                            ^^
+C:199:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["first_in_table"] = self._tab_hash.has_key(self._populateFeatures(prts,0,0,"end",features,"first_in_table").lower())
+                                                                                       ^^
+C:200:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["second_in_table"] = self._tab_hash.has_key(self._populateFeatures(prts,1,0,"end",features,"second_in_table").lower())
+                                                                                        ^^
+C:201:NetiNetiTrain.taxon_features: Comma not followed by a space
+        features["third_in_table"] = self._tab_hash.has_key(self._populateFeatures(prts,2,0,"end",features,"third_in_table").lower())
+                                                                                       ^^
+C:206:NetiNetiTrain.taxon_features: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:207:NetiNetiTrain.taxon_features: Comma not followed by a space
+            item = self._clnr.striptok(self._populateFeatures(context_array,index+span+c+1,0,"end",features,str(c+1)+"_context"))
+                                                                           ^^
+C:215:NetiNetiTrain.taxon_features: Comma not followed by a space
+                item1 = self._clnr.striptok(self._populateFeatures(context_array,index+c-context_span,0,"end",features,str(c-context_span)+"_context"))
+                                                                                ^^
+W:241:NetiNetiTrain.taxon_features: Catch "Exception"
+C:246:NetiNetiTrain.taxon_features: Operator not preceded by a space
+            features["count(%s)"%vowel] = token.lower().count(vowel)
+                                ^
+C:247:NetiNetiTrain.taxon_features: Operator not preceded by a space
+            features["has(%s)"%vowel] = vowel in token
+                              ^
+R:150:NetiNetiTrain.taxon_features: Too many statements (68/50)
+C:267:NetiNetiTrain._buildFeatures: Comma not followed by a space
+    def _buildFeatures(self,featuresets):
+                           ^^
+C:267:NetiNetiTrain._buildFeatures: Invalid name "_buildFeatures" (should match [a-z_][a-z0-9_]{2,30}$)
+C:267:NetiNetiTrain._buildFeatures: Missing docstring
+C:271:NetiNetiTrain._buildFeatures: Invalid name "NB" (should match [a-z_][a-z0-9_]{2,30}$)
+C:272:NetiNetiTrain._buildFeatures: Operator not preceded by a space
+            self._model=NB
+                       ^
+C:275:NetiNetiTrain._buildFeatures: Comma not followed by a space
+            MaxEnt = nltk.MaxentClassifier.train(featuresets,"MEGAM",max_iter=15)
+                                                            ^^
+C:275:NetiNetiTrain._buildFeatures: Invalid name "MaxEnt" (should match [a-z_][a-z0-9_]{2,30}$)
+C:280:NetiNetiTrain._buildFeatures: Comma not followed by a space
+            DTree = nltk.DecisionTreeClassifier.train(featuresets,0.05)
+                                                                 ^^
+C:280:NetiNetiTrain._buildFeatures: Invalid name "DTree" (should match [a-z_][a-z0-9_]{2,30}$)
+C:286:NetiNetiTrain.getModel: Invalid name "getModel" (should match [a-z_][a-z0-9_]{2,30}$)
+C:286:NetiNetiTrain.getModel: Missing docstring
+W:281:NetiNetiTrain._buildFeatures: Attribute '_model' defined outside __init__
+W:122:NetiNetiTrain._buildTable: Attribute '_tab_hash' defined outside __init__
+W:121:NetiNetiTrain._buildTable: Attribute '_tokens' defined outside __init__
+W:292: String statement has no effect
+C:300:NameFinder.__init__: Invalid name "_modelObject" (should match [a-z_][a-z0-9_]{2,30}$)
+C:293:NameFinder: Missing docstring
+C:294:NameFinder.__init__: Comma not followed by a space
+    def __init__(self,modelObject,e_list='data/new-list.txt'):
+                     ^^
+C:294:NameFinder.__init__: Invalid name "modelObject" (should match [a-z_][a-z0-9_]{2,30}$)
+C:294:NameFinder.__init__: Invalid name "modelObject" (should match [a-z_][a-z0-9_]{2,30}$)
+C:297:NameFinder.__init__: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:306:NameFinder._remDot: Comma not followed by a space
+    def _remDot(self,a):
+                    ^^
+C:306:NameFinder._remDot: Invalid name "_remDot" (should match [a-z_][a-z0-9_]{2,30}$)
+C:306:NameFinder._remDot: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:306:NameFinder._remDot: Missing docstring
+C:306:NameFinder._remDot: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+R:306:NameFinder._remDot: Method could be a function
+C:311:NameFinder._hCheck: Comma not followed by a space
+    def _hCheck(self,a):
+                    ^^
+C:311:NameFinder._hCheck: Invalid name "_hCheck" (should match [a-z_][a-z0-9_]{2,30}$)
+C:311:NameFinder._hCheck: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:311:NameFinder._hCheck: Missing docstring
+C:311:NameFinder._hCheck: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:312:NameFinder._hCheck: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:313:NameFinder._hCheck: Invalid name "e1" (should match [a-z_][a-z0-9_]{2,30}$)
+C:317:NameFinder._isGood2: Comma not followed by a space
+    def _isGood2(self,a,b):
+                     ^^
+C:317:NameFinder._isGood2: Invalid name "_isGood2" (should match [a-z_][a-z0-9_]{2,30}$)
+C:317:NameFinder._isGood2: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:317:NameFinder._isGood2: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:317:NameFinder._isGood2: Missing docstring
+C:317:NameFinder._isGood2: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:317:NameFinder._isGood2: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:319:NameFinder._isGood2: Invalid name "td" (should match [a-z_][a-z0-9_]{2,30}$)
+C:320:NameFinder._isGood2: Invalid name "s1" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Comma not followed by a space
+    def _isGood3(self,a,b,c):
+                     ^^
+C:324:NameFinder._isGood3: Invalid name "_isGood3" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Missing docstring
+C:324:NameFinder._isGood3: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:324:NameFinder._isGood3: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:327:NameFinder._isGood3: Invalid name "s1" (should match [a-z_][a-z0-9_]{2,30}$)
+C:328:NameFinder._isGood3: Operator not followed by a space
+            b_par_exp = b[0]+b[-1] =="()"
+                                   ^^
+C:331:NameFinder._isGood3: Invalid name "s2" (should match [a-z_][a-z0-9_]{2,30}$)
+C:334:NameFinder._isGood3: Comma not followed by a space
+                return(s1 and self._isGood2(a,b) and self._hCheck(c))
+                                             ^^
+C:336:NameFinder._isGood3: Comma not followed by a space
+            return(self._isGood2(a,c))
+                                  ^^
+C:340:NameFinder._taxonTest: Comma not followed by a space
+    def _taxonTest(self,tkn,context,index,span):
+                       ^^
+C:340:NameFinder._taxonTest: Invalid name "_taxonTest" (should match [a-z_][a-z0-9_]{2,30}$)
+C:340:NameFinder._taxonTest: Missing docstring
+C:341:NameFinder._taxonTest: Comma not followed by a space
+        return((self._modelObject.getModel().classify(self._modelObject.taxon_features(tkn,context,index,span)) =='taxon'))
+                                                                                          ^^
+C:343:NameFinder._resolve: Comma not followed by a space
+    def _resolve(self,a,b,c,nhash,nms,last_genus,plg):
+                     ^^
+R:343:NameFinder._resolve: Too many arguments (8/5)
+C:343:NameFinder._resolve: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:343:NameFinder._resolve: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:343:NameFinder._resolve: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:343:NameFinder._resolve: Missing docstring
+C:343:NameFinder._resolve: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:343:NameFinder._resolve: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:343:NameFinder._resolve: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:346:NameFinder._resolve: Invalid name "gr" (should match [a-z_][a-z0-9_]{2,30}$)
+C:348:NameFinder._resolve: Operator not followed by a space
+            gr =self._remDot((a+" "+b+" "+c).strip())
+               ^
+C:348:NameFinder._resolve: Invalid name "gr" (should match [a-z_][a-z0-9_]{2,30}$)
+C:364:NameFinder.find_names: Comma not followed by a space
+    def find_names(self,text,resolvedot = False):
+                       ^^
+R:364:NameFinder.find_names: Too many local variables (22/15)
+C:379:NameFinder.find_names: Comma not followed by a space
+        names,newnames,offsets = self.findNames(tok)
+             ^^
+C:380:NameFinder.find_names: Invalid name "sn" (should match [a-z_][a-z0-9_]{2,30}$)
+C:383:NameFinder.find_names: Invalid name "nh" (should match [a-z_][a-z0-9_]{2,30}$)
+C:387:NameFinder.find_names: Invalid name "ld" (should match [a-z_][a-z0-9_]{2,30}$)
+C:390:NameFinder.find_names: Invalid name "st" (should match [a-z_][a-z0-9_]{2,30}$)
+C:392:NameFinder.find_names: Invalid name "nl" (should match [a-z_][a-z0-9_]{2,30}$)
+C:393:NameFinder.find_names: Invalid name "n" (should match [a-z_][a-z0-9_]{2,30}$)
+C:407:NameFinder.find_names: Comma not followed by a space
+        return("\n".join(rnames),newnames,offsets)
+                                ^^
+C:410:NameFinder._cleanTok: Comma not followed by a space
+    def _cleanTok(self,a,b,c):
+                      ^^
+C:410:NameFinder._cleanTok: Invalid name "_cleanTok" (should match [a-z_][a-z0-9_]{2,30}$)
+C:410:NameFinder._cleanTok: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:410:NameFinder._cleanTok: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:410:NameFinder._cleanTok: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:410:NameFinder._cleanTok: Missing docstring
+C:410:NameFinder._cleanTok: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:410:NameFinder._cleanTok: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:410:NameFinder._cleanTok: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:412:NameFinder._cleanTok: Operator not preceded by a space
+        a1,b1= a.strip(),b.strip()
+             ^
+C:412:NameFinder._cleanTok: Invalid name "a1" (should match [a-z_][a-z0-9_]{2,30}$)
+C:412:NameFinder._cleanTok: Invalid name "b1" (should match [a-z_][a-z0-9_]{2,30}$)
+C:413:NameFinder._cleanTok: Comma not followed by a space
+        ra,rb = a1,b1
+          ^^
+C:413:NameFinder._cleanTok: Invalid name "ra" (should match [a-z_][a-z0-9_]{2,30}$)
+C:413:NameFinder._cleanTok: Invalid name "rb" (should match [a-z_][a-z0-9_]{2,30}$)
+C:417:NameFinder._cleanTok: Invalid name "ra" (should match [a-z_][a-z0-9_]{2,30}$)
+C:420:NameFinder._cleanTok: Invalid name "ra" (should match [a-z_][a-z0-9_]{2,30}$)
+C:426:NameFinder._cleanTok: Invalid name "rb" (should match [a-z_][a-z0-9_]{2,30}$)
+C:428:NameFinder._cleanTok: Invalid name "rb" (should match [a-z_][a-z0-9_]{2,30}$)
+C:430:NameFinder._cleanTok: Comma not followed by a space
+        return(ra,rb,self._clnr.striptok(c))
+                 ^^
+C:434:NameFinder._createIndex: Comma not followed by a space
+    def _createIndex(self,token):
+                         ^^
+C:434:NameFinder._createIndex: Invalid name "_createIndex" (should match [a-z_][a-z0-9_]{2,30}$)
+C:434:NameFinder._createIndex: Missing docstring
+C:436:NameFinder._createIndex: Invalid name "oh" (should match [a-z_][a-z0-9_]{2,30}$)
+R:434:NameFinder._createIndex: Method could be a function
+C:445:NameFinder._getOffsets: Comma not followed by a space
+    def _getOffsets(self,oh,index,a,b,c):
+                        ^^
+R:445:NameFinder._getOffsets: Too many arguments (6/5)
+C:445:NameFinder._getOffsets: Invalid name "_getOffsets" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "oh" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Missing docstring
+C:445:NameFinder._getOffsets: Invalid name "oh" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:445:NameFinder._getOffsets: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:446:NameFinder._getOffsets: Invalid name "st" (should match [a-z_][a-z0-9_]{2,30}$)
+C:447:NameFinder._getOffsets: Invalid name "st" (should match [a-z_][a-z0-9_]{2,30}$)
+C:448:NameFinder._getOffsets: Comma not followed by a space
+        return oh[index],oh[index]+len(st)
+                        ^^
+R:445:NameFinder._getOffsets: Method could be a function
+C:451:NameFinder._uninomialCheck: Comma not followed by a space
+    def _uninomialCheck(self,tok):
+                            ^^
+C:451:NameFinder._uninomialCheck: Invalid name "_uninomialCheck" (should match [a-z_][a-z0-9_]{2,30}$)
+C:451:NameFinder._uninomialCheck: Missing docstring
+C:459:NameFinder._endingCheck: Comma not followed by a space
+    def _endingCheck(self,tok):
+                         ^^
+C:459:NameFinder._endingCheck: Invalid name "_endingCheck" (should match [a-z_][a-z0-9_]{2,30}$)
+C:459:NameFinder._endingCheck: Missing docstring
+C:460:NameFinder._endingCheck: Comma not followed by a space
+        endings = ['aceae','ales','eae','idae','ina','inae','ineae','ini','mycetes'
+                          ^^
+        ,'mycota','mycotina','oidea','oideae','opsida','phyceae',
+       'phycidae','phyta','phytin']
+C:464:NameFinder._endingCheck: Comma not followed by a space
+        if(len(filter(lambda x: self._remDot(tok.lower()).endswith(x),endings)) > 0):
+                                                                     ^^
+W:464:NameFinder._endingCheck: Used builtin function 'filter'
+W:464:NameFinder._endingCheck.<lambda>: Lambda may not be necessary
+C:473:NameFinder.findNames: Comma not followed by a space
+    def findNames(self,token):
+                      ^^
+R:473:NameFinder.findNames: Too many local variables (32/15)
+C:473:NameFinder.findNames: Invalid name "findNames" (should match [a-z_][a-z0-9_]{2,30}$)
+C:473:NameFinder.findNames: Missing docstring
+C:478:NameFinder.findNames: Operator not preceded by a space
+        prev_last_genus=""
+                       ^
+C:480:NameFinder.findNames: Invalid name "ts" (should match [a-z_][a-z0-9_]{2,30}$)
+C:482:NameFinder.findNames: Invalid name "oh" (should match [a-z_][a-z0-9_]{2,30}$)
+C:486:NameFinder.findNames: Comma not followed by a space
+            if(self._isGood2(token[0],token[1]) and self._taxonTest(token[0]+" "+token[1],token,0,1)):
+                                     ^^
+C:489:NameFinder.findNames: Comma not followed by a space
+            if(len(token[0])>2 and token[0][0].isupper() and token[0].isalpha() and self._hCheck(token[0]) and self._taxonTest(token[0],token,0,0)):
+                                                                                                                                       ^^
+C:495:NameFinder.findNames: Comma not followed by a space
+            for a,b,c in tgr:
+                 ^^
+C:495:NameFinder.findNames: Invalid name "a" (should match [a-z_][a-z0-9_]{2,30}$)
+C:495:NameFinder.findNames: Invalid name "b" (should match [a-z_][a-z0-9_]{2,30}$)
+C:495:NameFinder.findNames: Invalid name "c" (should match [a-z_][a-z0-9_]{2,30}$)
+C:499:NameFinder.findNames: Comma not followed by a space
+                p,q,r = self._cleanTok(a,b,c)
+                 ^^
+C:499:NameFinder.findNames: Invalid name "p" (should match [a-z_][a-z0-9_]{2,30}$)
+C:499:NameFinder.findNames: Invalid name "q" (should match [a-z_][a-z0-9_]{2,30}$)
+C:499:NameFinder.findNames: Invalid name "r" (should match [a-z_][a-z0-9_]{2,30}$)
+C:503:NameFinder.findNames: Invalid name "bg" (should match [a-z_][a-z0-9_]{2,30}$)
+C:504:NameFinder.findNames: Invalid name "tg" (should match [a-z_][a-z0-9_]{2,30}$)
+C:517:NameFinder.findNames: Comma not followed by a space
+                if(self._isGood3(p,q,r)):
+                                  ^^
+C:519:NameFinder.findNames: Comma not followed by a space
+                    if(self._taxonTest(tg,token,icount,2)):
+                                         ^^
+C:521:NameFinder.findNames: Comma not followed by a space
+                        start,end = self._getOffsets(oh,icount,a,b,c)
+                             ^^
+C:522:NameFinder.findNames: Comma not followed by a space
+                        offset_list.append((start,end))
+                                                 ^^
+C:523:NameFinder.findNames: Comma not followed by a space
+                        self._resolve(p,q,r,nhash,nms,last_genus,prev_last_genus)
+                                       ^^
+C:525:NameFinder.findNames: Comma not followed by a space
+                elif(self._isGood2(p,q)):
+                                    ^^
+C:527:NameFinder.findNames: Comma not followed by a space
+                    if(self._taxonTest(bg,token,icount,1)):
+                                         ^^
+C:529:NameFinder.findNames: Comma not followed by a space
+                        start,end = self._getOffsets(oh,icount,a,b,"")
+                             ^^
+C:530:NameFinder.findNames: Comma not followed by a space
+                        offset_list.append((start,end))
+                                                 ^^
+C:531:NameFinder.findNames: Comma not followed by a space
+                        self._resolve(p,q,"",nhash,nms,last_genus,prev_last_genus)
+                                       ^^
+C:534:NameFinder.findNames: Comma not followed by a space
+                    if(self._taxonTest(re.sub("\.",". ",self._remDot(p)),token,icount,0)):
+                                                  ^^
+C:535:NameFinder.findNames: Comma not followed by a space
+                        start,end = self._getOffsets(oh,icount,a,"","")
+                             ^^
+C:536:NameFinder.findNames: Comma not followed by a space
+                        offset_list.append((start,end))
+                                                 ^^
+C:539:NameFinder.findNames: Comma not followed by a space
+                        start,end = self._getOffsets(oh,icount,a,"","")
+                             ^^
+C:540:NameFinder.findNames: Comma not followed by a space
+                        offset_list.append((start,end))
+                                                 ^^
+C:544:NameFinder.findNames: Comma not followed by a space
+                        start,end = self._getOffsets(oh,icount,a,"","")
+                             ^^
+C:545:NameFinder.findNames: Comma not followed by a space
+                        offset_list.append((start,end))
+                                                 ^^
+W:557:NameFinder.findNames: Catch "Exception"
+C:550:NameFinder.findNames: Comma not followed by a space
+            if(self._isGood2(tgr[-1][-2],tgr[-1][-1])):
+                                        ^^
+C:551:NameFinder.findNames: Comma not followed by a space
+                if(self._taxonTest(self._remDot(tgr[-1][-2]+" "+tgr[-1][-1]),token,icount+1,1)):
+                                                                            ^^
+C:552:NameFinder.findNames: Comma not followed by a space
+                    self._resolve(tgr[-1][-2],tgr[-1][-1],"",nhash,nms,last_genus,prev_last_genus)
+                                             ^^
+C:555:NameFinder.findNames: Comma not followed by a space
+                    if(self._taxonTest(re.sub("\."," ",self._remDot(tgr[-1][-2])),token,icount+1,0)):
+                                                  ^^
+C:559:NameFinder.findNames: Invalid name "te" (should match [a-z_][a-z0-9_]{2,30}$)
+C:563:NameFinder.findNames: Invalid name "o" (should match [a-z_][a-z0-9_]{2,30}$)
+C:580:NameFinder.findNames: Invalid name "tj" (should match [a-z_][a-z0-9_]{2,30}$)
+C:582:NameFinder.findNames: Comma not followed by a space
+            nnofl.append((no1,no2))
+                             ^^
+C:587:NameFinder.findNames: Comma not followed by a space
+        return(nms,nnewn,nnofl)
+                  ^^
+R:473:NameFinder.findNames: Too many branches (28/12)
+R:473:NameFinder.findNames: Too many statements (80/50)
+C:589:NameFinder.embedNames: Comma not followed by a space
+    def embedNames(lst,filename):
+                      ^^
+E:589:NameFinder.embedNames: Method should have "self" as first argument
+C:589:NameFinder.embedNames: Invalid name "embedNames" (should match [a-z_][a-z0-9_]{2,30}$)
+C:589:NameFinder.embedNames: Missing docstring
+C:591:NameFinder.embedNames: Invalid name "f" (should match [a-z_][a-z0-9_]{2,30}$)
+C:595:NameFinder.embedNames: Invalid name "l" (should match [a-z_][a-z0-9_]{2,30}$)
+C:596:NameFinder.embedNames: Comma not followed by a space
+            i = random.randint(0,len(tksents)-1)
+                                ^^
+C:597:NameFinder.embedNames: Comma not followed by a space
+            tksents[i].insert(random.randint(0,len(tksents[i])-1),l)
+                                              ^^
+W:372:NameFinder.find_names: Attribute '_text' defined outside __init__
+W:603:TextClean: Class has no __init__ method
+C:603:TextClean: Missing docstring
+C:605:TextClean.leftStrip: Comma not followed by a space
+    def leftStrip(self,t):
+                      ^^
+C:605:TextClean.leftStrip: Invalid name "leftStrip" (should match [a-z_][a-z0-9_]{2,30}$)
+C:605:TextClean.leftStrip: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+C:605:TextClean.leftStrip: Missing docstring
+C:605:TextClean.leftStrip: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+C:613:TextClean.leftStrip: Comma not followed by a space
+            return('',0)
+                     ^^
+C:614:TextClean.leftStrip: Comma not followed by a space
+        return(t[i:],i)
+                    ^^
+R:605:TextClean.leftStrip: Method could be a function
+C:616:TextClean.rightStrip: Comma not followed by a space
+    def rightStrip(self,t):
+                       ^^
+C:616:TextClean.rightStrip: Invalid name "rightStrip" (should match [a-z_][a-z0-9_]{2,30}$)
+C:616:TextClean.rightStrip: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+C:616:TextClean.rightStrip: Missing docstring
+C:616:TextClean.rightStrip: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+C:625:TextClean.rightStrip: Comma not followed by a space
+            return(t,0)
+                    ^^
+C:628:TextClean.rightStrip: Comma not followed by a space
+            return('',0)
+                     ^^
+C:631:TextClean.rightStrip: Comma not followed by a space
+            return(t[:j+1],j+1)
+                          ^^
+R:616:TextClean.rightStrip: Method could be a function
+C:635:TextClean.striptok: Comma not followed by a space
+    def striptok(self,t):
+                     ^^
+C:635:TextClean.striptok: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+C:635:TextClean.striptok: Missing docstring
+C:635:TextClean.striptok: Invalid name "t" (should match [a-z_][a-z0-9_]{2,30}$)
+
+
+Report
+======
+417 statements analysed.
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |336    |336      |=          |
++-----------+-------+---------+-----------+
+|refactor   |20     |20       |=          |
++-----------+-------+---------+-----------+
+|warning    |14     |14       |=          |
++-----------+-------+---------+-----------+
+|error      |1      |1        |=          |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++-----------+------------+
+|message id |occurrences |
++===========+============+
+|C0324      |121         |
++-----------+------------+
+|C0103      |121         |
++-----------+------------+
+|C0301      |56          |
++-----------+------------+
+|C0111      |27          |
++-----------+------------+
+|R0201      |8           |
++-----------+------------+
+|C0322      |6           |
++-----------+------------+
+|C0323      |5           |
++-----------+------------+
+|W0703      |4           |
++-----------+------------+
+|W0201      |4           |
++-----------+------------+
+|R0914      |4           |
++-----------+------------+
+|R0913      |4           |
++-----------+------------+
+|W0141      |3           |
++-----------+------------+
+|R0915      |2           |
++-----------+------------+
+|W0232      |1           |
++-----------+------------+
+|W0108      |1           |
++-----------+------------+
+|W0105      |1           |
++-----------+------------+
+|R0912      |1           |
++-----------+------------+
+|R0902      |1           |
++-----------+------------+
+|F0401      |1           |
++-----------+------------+
+|E0213      |1           |
++-----------+------------+
+
+
+
+Global evaluation
+-----------------
+Your code has been rated at 1.01/10 (previous run: 1.01/10)
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |1          |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |3      |3          |=          |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |27     |27         |=          |11.11       |77.78    |
++---------+-------+-----------+-----------+------------+---------+
+|function |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |=          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |440    |77.46 |440      |=          |
++----------+-------+------+---------+-----------+
+|docstring |21     |3.70  |21       |=          |
++----------+-------+------+---------+-----------+
+|comment   |41     |7.22  |41       |=          |
++----------+-------+------+---------+-----------+
+|empty     |66     |11.62 |66       |=          |
++----------+-------+------+---------+-----------+
+
+
+
