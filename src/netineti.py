@@ -70,7 +70,6 @@ class NetiNetiTrain:
                 index = 0
             span = len(name_parts)-1
             featuresets.append((self.taxon_features(name,context_array,index,span),'taxon'))
-
             if(len(name_parts[0]) > 1 and name_parts[0][1]!="."):
                 abb_name = name_parts[0][0]+". "+" ".join(name_parts[1:])
                 featuresets.append((self.taxon_features(abb_name,context_array,index,span),'taxon'))
@@ -401,24 +400,16 @@ class NameFinder():
         else:
             lnames.sort()
             rnames = lnames
-
-
-
         return("\n".join(rnames),newnames,offsets)
 
-
     def _cleanTok(self,a,b,c):
-
         a1,b1= a.strip(),b.strip()
         ra,rb = a1,b1
         if( (len(a1) > 1 )):
             if(a1[-1] =="."):
-
                 ra = self._clnr.leftStrip(a1)[0]
-
             else:
                 ra = self._clnr.striptok(a1)
-
         if(len(b1) > 1):
             if(b1[0]+b1[-1] == "()"):
                 pass
@@ -426,10 +417,7 @@ class NameFinder():
                 rb = self._clnr.leftStrip(b1)[0]
             else:
                 rb = self._clnr.striptok(b1)
-
         return(ra,rb,self._clnr.striptok(c))
-
-
 
     def _createIndex(self,token):
         length = 0
@@ -447,12 +435,9 @@ class NameFinder():
         st = st.strip()
         return oh[index],oh[index]+len(st)
 
-
     def _uninomialCheck(self,tok):
-
         if(len(tok)>5 and tok[0].isupper()  and tok[1:].islower() and (self._remDot(tok).isalpha() or (tok[0].isupper() and tok[1] =="." and tok[2].islower() and self._remDot(tok[2:]).isalpha())) and self._hCheck(tok)):
             return(True)
-
         else:
             return(False)
 
@@ -466,34 +451,25 @@ class NameFinder():
         else:
             return(False)
 
-
-
-
-
     def findNames(self,token):
-
         icount = -1 #index as we iterate over trigrams
         nms = [] # list for names
         last_genus = ""
         prev_last_genus=""
         nhash = {}
         ts = time.clock()
-
         oh = self._createIndex(token)
         offset_list = []
-
         if(len(token) ==2):
             if(self._isGood2(token[0],token[1]) and self._taxonTest(token[0]+" "+token[1],token,0,1)):
                 nms.append(token[0]+" "+token[1])
         elif(len(token)==1):
             if(len(token[0])>2 and token[0][0].isupper() and token[0].isalpha() and self._hCheck(token[0]) and self._taxonTest(token[0],token,0,0)):
                 nms.append(token[0])
-
         else:
             tgr = nltk.trigrams(token)
             #not generating bigrams...getting them from trigrams..little more efficient
             for a,b,c in tgr:
-
                 icount += 1
                 #print a,icount
                 p,q,r = self._cleanTok(a,b,c)
@@ -521,7 +497,6 @@ class NameFinder():
                         start,end = self._getOffsets(oh,icount,a,b,c)
                         offset_list.append((start,end))
                         self._resolve(p,q,r,nhash,nms,last_genus,prev_last_genus)
-
                 elif(self._isGood2(p,q)):
                     #print "good bigram..."
                     if(self._taxonTest(bg,token,icount,1)):
@@ -529,7 +504,6 @@ class NameFinder():
                         start,end = self._getOffsets(oh,icount,a,b,"")
                         offset_list.append((start,end))
                         self._resolve(p,q,"",nhash,nms,last_genus,prev_last_genus)
-
                 elif(self._uninomialCheck(p)):
                     if(self._taxonTest(re.sub("\.",". ",self._remDot(p)),token,icount,0)):
                         start,end = self._getOffsets(oh,icount,a,"","")
@@ -544,8 +518,6 @@ class NameFinder():
                         start,end = self._getOffsets(oh,icount,a,"","")
                         offset_list.append((start,end))
                         nms.append(self._remDot(p))
-
-
         try:
             if(self._isGood2(tgr[-1][-2],tgr[-1][-1])):
                 if(self._taxonTest(self._remDot(tgr[-1][-2]+" "+tgr[-1][-1]),token,icount+1,1)):
@@ -587,7 +559,6 @@ class NameFinder():
         return(nms,nnewn,nnofl)
 
     def embedNames(lst,filename):
-
         f = open(os.path.dirname(__file__) + "/"  + filename).read()
         sents = nltk.sent_tokenize(f)
         tksents = [nltk.word_tokenize(a) for a in sents]
@@ -601,7 +572,6 @@ class NameFinder():
 
 
 class TextClean():
-
     # This function strips non alpha characters from the left of a string
     # and returns the new string and the number of characters stripped
     def leftStrip(self,t):
