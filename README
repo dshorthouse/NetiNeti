@@ -3,6 +3,7 @@ Setting up VirtualEnv
 * install virtualenv (easy_install virtualenv or pip install virtualenv)
 * use the neti_env.py as the environment bootstrap (python neti_env.py ~/virtualenvs/neti)
 * this creates a local environment for the netineti project with all the dependencies installed
+* dependencies => pyyaml, nltk, nose
 * source ~/virtualenvs/neti/bin/activate
 * use netineti
 

@@ -1245,6 +1245,8 @@ def after_install(options, home_dir):
                     'pyyaml'])
     subprocess.call([join(home_dir, 'bin', 'easy_install'),
                     'nltk'])
+    subprocess.call([join(home_dir, 'bin', 'easy_install'),
+                    'nose'])
 
 
 ##file site.py
