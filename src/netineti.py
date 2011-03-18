@@ -602,6 +602,8 @@ class NameFinder():
 
 class TextClean():
 
+    # This function strips non alpha characters from the left of a string
+    # and returns the new string and the number of characters stripped
     def leftStrip(self,t):
         i = 0
         while(i < len(t)):
@@ -613,11 +615,12 @@ class TextClean():
             return('',0)
         return(t[i:],i)
 
+    # This strips non alpha characters from the right of a string
+    # and returns the new string and the number of characters stripped negated
     def rightStrip(self,t):
         j = -1
         while(j >= -len(t)):
             if(not t[j].isalpha()):
-
                 j = j-1
             else:
                 break
@@ -629,9 +632,9 @@ class TextClean():
 
         else:
             return(t[:j+1],j+1)
-
-
-
+    
+    # This will just return the word with nonalpha characters stripped
+    #  off of the left and right.
     def striptok(self,t):
         return(self.rightStrip(self.leftStrip(t)[0])[0])
 
