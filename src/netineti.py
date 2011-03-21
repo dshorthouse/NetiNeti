@@ -162,9 +162,9 @@ class NetiNetiTrain:
         print(len(self._tab_hash))
 
     def _populateFeatures(self, array, idx, start, stop, features, name):
-        #TODO change method to _populate_features
-        #TODO catch a less general Exception
-        #TODO could remove method from the class
+        # TODO change method to _populate_features
+        # TODO catch a less general Exception
+        # TODO could remove method from the class
         """Return a dictionary of features
 
         Arguments:
@@ -187,9 +187,9 @@ class NetiNetiTrain:
         return(features[name])
 
     def _incWeight(self, st_wt, inc, val):
-        #TODO change name to _inc_weight
-        #TODO change argument names to something useful
-        #TODO could remove method from the class
+        # TODO change name to _inc_weight
+        # TODO change argument names to something useful
+        # TODO could remove method from the class
         """O_o
 
         Arguments:
@@ -529,8 +529,16 @@ class NameFinder():
             nhash[self._remDot((a[0] + ". " + b + " " + c).strip())] = a[1:]
 
     def find_names(self, text, resolvedot=False):
+        # TODO fix variable names
+        # TODO perhaps break this up into smaller functions
         """Return a string of names concatenated with a newline and a list of 
         offsets for each mention of the name in the original text.
+
+        Arguments:
+        text -- input text
+
+        Keyword Arguments:
+        resolvedot -- boolean to resolve the dot (default False)
 
         """
         self._text = text
@@ -568,6 +576,16 @@ class NameFinder():
         return("\n".join(rnames), newnames, offsets)
 
     def _cleanTok(self, a, b, c):
+        # TODO rename method to _clean_tokens or similar
+        # TODO rename variables (a, b, c, a1, b1, ra, rb)
+        """Cleans the tokens.
+        
+        Arguments:
+        a -- describe the argument
+        b -- describe the argument
+        c -- describe the argument
+
+        """
         a1, b1 = a.strip(), b.strip()
         ra, rb = a1, b1
         if((len(a1) > 1)):
@@ -585,6 +603,16 @@ class NameFinder():
         return(ra, rb, self._clnr.striptok(c))
 
     def _createIndex(self, token):
+        # TODO rename method to _create_index or similar
+        # TODO there is lots of programming cleanup that can happen here
+        # TODO rename variables, specifically oh 
+        # TODO could remove method from the class
+        """Returns a dictionary.
+        
+        Arguments:
+        token -- the token object
+
+        """
         length = 0
         oh = {}
         for i in range(len(token)):
@@ -596,11 +624,32 @@ class NameFinder():
         return(oh)
 
     def _getOffsets(self, oh, index, a, b, c):
+        # TODO rename method to _get_offsets
+        # TODO rename variables (oh, a, b, c, st)
+        # TODO could remove method from the class
+        """Returns a tuple of the offsets, I hope.
+
+        Arguments:
+        oh -- describe arg
+        index -- describe arg
+        a -- describe arg
+        b -- describe arg
+        c -- describe arg
+        """
         st = a + " " + b + " " + c
         st = st.strip()
         return oh[index], oh[index] + len(st)
 
     def _uninomialCheck(self, tok):
+        # TODO rename method to _uninomial_check or similar
+        # TODO rename variable tok to token
+        # TODO since neither remdot nor h_check refer to the object
+        #  neither does this method
+        """Checks to see if a token is a uninomial and returns a boolean.
+
+        Arguments:
+        tok -- the token to check
+        """
         if(len(tok) > 5 and tok[0].isupper() and tok[1:].islower() and 
             (self._remDot(tok).isalpha() or (tok[0].isupper() and
                                         tok[1] == "." and tok[2].islower() and 
@@ -611,6 +660,14 @@ class NameFinder():
             return(False)
 
     def _endingCheck(self, tok):
+        # TODO rename method to _ending_check or similar
+        # TODO this doesn't really use the object since remdot does not
+        # TODO filter can be replaced with a list comprehension
+        """Check the ending of the token and returns a boolean.
+
+        Arguments:
+        tok -- the token to check
+        """
         endings = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
                     'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
                     'opsida', 'phyceae', 'phycidae', 'phyta', 'phytin']
@@ -621,6 +678,18 @@ class NameFinder():
             return(False)
 
     def findNames(self, token):
+        # TODO find a new method name, we already have find_names
+        # TODO perhaps split this into several variables?
+        # TODO catch a less general exception
+        # TODO pylint says too many branches, that should get fixed if we
+        #  move this to separate functions
+        # TODO rename all the variables. All of them. GAHHH
+        """It returns this: return(nms, nnewn, nnofl).
+
+        Arguments:
+        token -- describe token
+
+        """
         icount = -1 #index as we iterate over trigrams
         nms = [] # list for names
         last_genus = ""
@@ -740,6 +809,16 @@ class NameFinder():
         return(nms, nnewn, nnofl)
 
     def embedNames(lst, filename):
+        # TODO rename to embed_names or similar
+        # TODO change variable names
+        # TODO self should be first method argument
+        """Describe method
+
+        Arguments:
+        lst -- 
+        filename -- 
+
+        """
         f = open(os.path.dirname(__file__) + "/"  + filename).read()
         sents = nltk.sent_tokenize(f)
         tksents = [nltk.word_tokenize(a) for a in sents]
@@ -753,9 +832,22 @@ class NameFinder():
 
 
 class TextClean():
-    # This function strips non alpha characters from the left of a string
-    # and returns the new string and the number of characters stripped
+    # TODO create an __init__ method
+    """This appears to be a class dedicated to cleaning text. There is much
+    work to do.
+
+    """
+
     def leftStrip(self, t):
+        # TODO rename method
+        # TODO rename variables
+        """This takes a token and strips non alpha characters off the left. It
+        returns the stripped string and the number of characters it stripped.
+
+        Arguments:
+        t --
+
+        """
         i = 0
         while(i < len(t)):
             if(not t[i].isalpha()):
@@ -769,6 +861,15 @@ class TextClean():
     # This strips non alpha characters from the right of a string
     # and returns the new string and the number of characters stripped negated
     def rightStrip(self, t):
+        # TODO rename method
+        # TODO rename variables
+        """This takes a token and strips non alpha characters off the right. It
+        returns the stripped string and the number of characters it stripped.
+
+        Arguments:
+        t --
+
+        """
         j = -1
         while(j >= -len(t)):
             if(not t[j].isalpha()):
@@ -782,9 +883,15 @@ class TextClean():
         else:
             return(t[:j + 1], j + 1)
     
-    # This will just return the word with nonalpha characters stripped
-    #  off of the left and right.
     def striptok(self, t):
+        # TODO rename method
+        # TODO rename variables
+        """This combines leftStrip and rightStrip into one method.
+
+        Arguments:
+        t --
+
+        """
         return(self.rightStrip(self.leftStrip(t)[0])[0])
 
 
