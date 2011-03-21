@@ -24,7 +24,19 @@ class NetiNetiTrain:
                  irrelevant_text="data/pictorialgeo.txt",
                  all_names="data/millionnames.txt", learning_algo = "NB",
                  num_tok_train=10000, num_neg_tg=5000, context_span=1):
+        # FIXME: Too many arguments, perhaps create a TrainingFiles Class?
+        """Builds and trains the NetiNeti model
 
+        Keyword arguments:
+        species_train -- 
+        irrelevant_text --
+        all_names --
+        learning_algo --
+        num_tok_train --
+        num_neg_tg --
+        context_span --
+
+        """
         self._clnr = TextClean()
         self.species_train = species_train
         self.irrelevant_text = irrelevant_text
@@ -39,14 +51,28 @@ class NetiNetiTrain:
         self._buildFeatures(self._getTrainingData())
 
     def _splitGet(self, fileName):
+        # FIXME: change the method to _split_get(self, file_name)
+        # FIXME: .split('\n') should be .splitlines()
+        # FIXME: map is superseeded by list comprehension
+        # FIXME: this does not touch the class in anyway. Move out of class 
+        """Return a list of the lines of the input file.
+
+        Keyword arguments:
+        fileName -- the file to read
+
+        """
         pdata = open(os.path.dirname(__file__) + "/"  + fileName).read()
         tokens = pdata.split('\n')
         #remove trailing spaces
         tokens = map(lambda x:x.strip(), tokens)
         return(tokens)
 
-
     def _getTrainingData(self):
+        # FIXME: Too many local variables, perhaps make this several methods?
+        # FIXME: rename _getTrainingData to _get_training_data
+        # FIXME: filter can be replaced by list comprehension
+        # FIXME: We should catch a better Exception
+        """Builds and returns the feature sets for the algorithm"""
         #positive_data with contextual information
         featuresets = []
         ptokens = self._splitGet(self.species_train)
@@ -156,7 +182,6 @@ class NetiNetiTrain:
         #prts = [self._clnr.striptok(pt) for pt in prts]
         #if(lc =="."):
         #       prts[0] = prts[0]+"."
-
         self._populateFeatures(prts, 0, -3, "end", features, "last3_first")
         self._populateFeatures(prts, 1, -3, "end", features, "last3_second")
         self._populateFeatures(prts, 2, -3, "end", features, "last3_third")
@@ -167,7 +192,6 @@ class NetiNetiTrain:
         self._populateFeatures(prts, 0, -1, "sc", features, "last_char")
         self._populateFeatures(prts, 0, 1, "sc", features, "second_char")
         self._populateFeatures(prts, 0, -2, "sc", features, "sec_last_char")
-
         features["lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts, 0,
             -1, "sc", features, "lastltr_of_fw_in_sv") in sv
         string_weight = self._incWeight(string_weight, swt, j)
@@ -294,6 +318,7 @@ This version supports offsets.
 
 """
 class NameFinder():
+
     def __init__(self, modelObject, e_list='data/new-list.txt'):
         reml = {}
         elist = open(os.path.dirname(__file__) + "/"  + 
@@ -307,10 +332,12 @@ class NameFinder():
         #psyco.bind(self.find_names)
 
     def _remDot(self, a):
+        """Return the string with no dot at the end of it"""
         if(len(a) > 2 and a[-1] == '.'):
             return(a[:-1])
         else:
             return (a)
+
     def _hCheck(self, a):
         a = self._remDot(a)
         e1 = a.split("-")
@@ -374,9 +401,8 @@ class NameFinder():
             nhash[self._remDot((a[0] + ". " + b + " " + c).strip())] = a[1:]
 
     def find_names(self, text, resolvedot = False):
-        """
-        This method now returns a string of names(concatenated with a newline)
-        and a list of offsets for each mention of the name in the origical text
+        """Return a string of names concatenated with a newline and a list of 
+        offsets for each mention of the name in the original text.
 
         """
         self._text = text

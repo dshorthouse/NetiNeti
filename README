@@ -7,6 +7,10 @@ Setting up VirtualEnv
 * source ~/virtualenvs/neti/bin/activate
 * use netineti
 
+Code Notes
+----------
+* FIXMEs will be implemented once we have complete code coverage of the method that needs fixing
+
 DEPENDENCIES
 ------------
 * nltk >= 2.09b3
