@@ -24,7 +24,7 @@ class NetiNetiTrain:
                  irrelevant_text="data/pictorialgeo.txt",
                  all_names="data/millionnames.txt", learning_algo = "NB",
                  num_tok_train=10000, num_neg_tg=5000, context_span=1):
-        # FIXME: Too many arguments, perhaps create a TrainingFiles Class?
+        # TODO Too many arguments, perhaps create a TrainingFiles Class?
         """Builds and trains the NetiNeti model
 
         Keyword arguments:
@@ -51,13 +51,13 @@ class NetiNetiTrain:
         self._buildFeatures(self._getTrainingData())
 
     def _splitGet(self, fileName):
-        # FIXME: change the method to _split_get(self, file_name)
-        # FIXME: .split('\n') should be .splitlines()
-        # FIXME: map is superseeded by list comprehension
-        # FIXME: this does not touch the class in anyway. Move out of class 
+        # TODO change the method to _split_get(self, file_name)
+        # TODO .split('\n') should be .splitlines()
+        # TODO map is superseeded by list comprehension
+        # TODO could remove method from the class
         """Return a list of the lines of the input file.
 
-        Keyword arguments:
+        Arguments:
         fileName -- the file to read
 
         """
@@ -68,10 +68,11 @@ class NetiNetiTrain:
         return(tokens)
 
     def _getTrainingData(self):
-        # FIXME: Too many local variables, perhaps make this several methods?
-        # FIXME: rename _getTrainingData to _get_training_data
-        # FIXME: filter can be replaced by list comprehension
-        # FIXME: We should catch a better Exception
+        # TODO Too many local variables, perhaps make this several methods?
+        # TODO rename _getTrainingData to _get_training_data
+        # TODO filter can be replaced by list comprehension
+        # TODO We should catch a better Exception
+        # TODO Rename the variables: p, q, r, tg, bg
         """Builds and returns the feature sets for the algorithm"""
         #positive_data with contextual information
         featuresets = []
@@ -136,6 +137,14 @@ class NetiNetiTrain:
         return(featuresets)
 
     def _buildTable(self):
+        # TODO rename method to _build_table
+        # TODO Do we really need to time this?
+        # TODO rename ta, t, p, tb to something useful
+        # TODO remove print statements
+        """Creates an instance attribute dictionary that stores every word as
+        the key and the value is always 1.
+
+        """
         ta = time.clock()
         ttokens = self._splitGet(self._all_names)
         random.shuffle(ttokens)
@@ -150,6 +159,19 @@ class NetiNetiTrain:
         print(len(self._tab_hash))
 
     def _populateFeatures(self, array, idx, start, stop, features, name):
+        #TODO change method to _populate_features
+        #TODO catch a less general Exception
+        #TODO could remove method from the class
+        """Return a dictionary of features
+
+        Arguments:
+        array -- 
+        idx -- index
+        start --
+        stop --
+        features --
+        name --
+        """
         try:
             if(stop == "end"):
                 features[name] = array[idx][start:]
@@ -162,12 +184,26 @@ class NetiNetiTrain:
         return(features[name])
 
     def _incWeight(self, st_wt, inc, val):
+        #TODO change name to _inc_weight
+        #TODO change argument names to something useful
+        #TODO could remove method from the class
+        """O_o
+
+        Arguments:
+        st_wt -- starting weight?
+        inc -- the amount to increase the starting weight?
+        val -- maybe a boolean?
+        """
         if(val):
             return(st_wt + inc)
         else:
             return(st_wt)
 
     def taxon_features(self, token, context_array, index, span):
+        # TODO it's long. Perhaps split into several functions?
+        # TODO change variable names, at least sv and c and probably others
+        # TODO catch a less generic exception
+        """Returns a dictionary of features"""
         token = token.strip()
         context_span = self._context_span
         features = {}
@@ -294,6 +330,10 @@ class NetiNetiTrain:
         return features
 
     def _buildFeatures(self, featuresets):
+        # TODO change name to _build_features
+        # TODO change at least NB and MaxEnt variables, probably others
+        # TODO nltk doesn't have MaxentClassifier, probably MaxEntClassifier
+        """This changes the algorithm that nltk uses to train the model"""
         if(self.learning_algo == "NB"):
             #WNB = nltk.classify.weka.WekaClassifier.train("Naive_Bayes_weka",
             #featuresets,"naivebayes")
@@ -311,6 +351,8 @@ class NetiNetiTrain:
             self._model = DTree
 
     def getModel(self):
+        # TODO change name to get_model
+        """An accessor method for the model"""
         return self._model
 
 """
