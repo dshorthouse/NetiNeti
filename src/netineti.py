@@ -19,22 +19,24 @@ import os
 #import psyco
 
 class NetiNetiTrain:
-
+    """A class that defines the training algorithm and the training files
+    and actually trains a natrual language toolkit object (nltk)
+    """
     def __init__(self, species_train="data/New_sp_contexts.txt",
                  irrelevant_text="data/pictorialgeo.txt",
-                 all_names="data/millionnames.txt", learning_algo = "NB",
+                 all_names="data/millionnames.txt", learning_algo="NB",
                  num_tok_train=10000, num_neg_tg=5000, context_span=1):
         # TODO Too many arguments, perhaps create a TrainingFiles Class?
         """Builds and trains the NetiNeti model
 
         Keyword arguments:
-        species_train -- 
-        irrelevant_text --
-        all_names --
-        learning_algo --
-        num_tok_train --
-        num_neg_tg --
-        context_span --
+        species_train -- describe arg (default "data/New_sp_contexts.txt")
+        irrelevant_text -- describe arg (default "data/pictorialgeo.txt")
+        all_names -- describe arg (default "data/millionnames.txt")
+        learning_algo -- the algorithm to train with (default "NB")
+        num_tok_train -- number of tokens to train on? (default 10000)
+        num_neg_tg -- describe arg (default 5000)
+        context_span -- describe arg (default 1)
 
         """
         self._clnr = TextClean()
@@ -141,6 +143,7 @@ class NetiNetiTrain:
         # TODO Do we really need to time this?
         # TODO rename ta, t, p, tb to something useful
         # TODO remove print statements
+        # TODO move creation of _tab_hash and _tokens to the __init__ method
         """Creates an instance attribute dictionary that stores every word as
         the key and the value is always 1.
 
@@ -333,7 +336,14 @@ class NetiNetiTrain:
         # TODO change name to _build_features
         # TODO change at least NB and MaxEnt variables, probably others
         # TODO nltk doesn't have MaxentClassifier, probably MaxEntClassifier
-        """This changes the algorithm that nltk uses to train the model"""
+        # TODO define self._model in the __init__ method
+        # TODO remove print statements
+        """This changes the algorithm that nltk uses to train the model.
+        
+        Arguments:
+        featuresets -- 
+
+        """
         if(self.learning_algo == "NB"):
             #WNB = nltk.classify.weka.WekaClassifier.train("Naive_Bayes_weka",
             #featuresets,"naivebayes")
@@ -352,16 +362,29 @@ class NetiNetiTrain:
 
     def getModel(self):
         # TODO change name to get_model
-        """An accessor method for the model"""
+        """An accessor method for the model."""
         return self._model
 
-"""
-This version supports offsets.
-
-"""
 class NameFinder():
+    """The meat of NetiNeti. This class uses the trained NetiNetiTrain model
+    and searches through text to find names.
+
+    This version supports offsets.
+    
+    """
 
     def __init__(self, modelObject, e_list='data/new-list.txt'):
+        # TODO change the name of modelObject to model_object
+        # TODO change the variables e_list, a and reml to something useful
+        """Create the name finder object.
+
+        Arguments:
+        modelObject -- maybe the trained NetiNetiTrain object?
+
+        Keyword Arguments:
+        e_list -- describe argument (default "data/new-list.txt")
+
+        """
         reml = {}
         elist = open(os.path.dirname(__file__) + "/"  + 
                      e_list).read().split("\n")
@@ -374,19 +397,44 @@ class NameFinder():
         #psyco.bind(self.find_names)
 
     def _remDot(self, a):
-        """Return the string with no dot at the end of it"""
+        # TODO change the name to _remove_dot (or something similar)
+        # TODO change the variable 'a' to something useful
+        # TODO could remove method from the class
+        """Return the string with no dot at the end of it.
+        
+        Arguments:
+        a -- describe argument
+        
+        """
         if(len(a) > 2 and a[-1] == '.'):
             return(a[:-1])
         else:
             return (a)
 
     def _hCheck(self, a):
+        # TODO change name to something useful, not _h_check
+        # TODO change variables (a, w, j, e1) to something useful
+        """Returns a boolean.
+        
+        Arguments:
+        a -- describe argument
+
+        """
         a = self._remDot(a)
         e1 = a.split("-")
         j = [self._remlist.has_key(w) for w in e1]
         return(not True in j and not self._remlist.has_key(a.lower()))
 
     def _isGood2(self, a, b):
+        # TODO change name to something useful, not _is_good_2
+        # TODO change variable names (a, b, td, s1) to something useful
+        """Returns a boolean.
+        
+        Arguments:
+        a -- describe argument
+        b -- describe argument
+
+        """
         if(len(a) > 1 and len(b) > 1):
             td = (a[1] == '.' and len(a) ==2)
             s1 = a[0].isupper() and b.islower() and ((a[1:].islower() and
@@ -396,6 +444,17 @@ class NameFinder():
             return(False)
 
     def _isGood3(self, a, b, c):
+        # TODO change name to something useful, not _is_good_3
+        # TODO change variable names to something useful
+        #      including a, b, c, s1, b_par_exp, s2
+        """Returns a boolean.
+        
+        Arguments:
+        a -- describe argument
+        b -- describe argument
+        c -- describe argument
+
+        """
         if(len(a) > 1 and len(b) > 1 and len(c) > 1):
             s1 = c.islower() and self._remDot(c).isalpha()
             b_par_exp = b[0] + b[-1] == "()"
@@ -416,11 +475,38 @@ class NameFinder():
             return(False)
 
     def _taxonTest(self, tkn, context, index, span):
+        # TODO rename to _taxon_test or similar
+        # TODO change some of the variables names to something useful
+        # TODO perhaps make this more than one line?
+        """Test for a taxon
+        
+        Arguments:
+        tkn -- token?
+        context -- describe argument
+        index -- describe argument
+        span -- describe argument
+        
+        """
         return((self._modelObject.getModel().classify(
             self._modelObject.taxon_features(tkn, context, index, span)) == 
             'taxon'))
 
     def _resolve(self, a, b, c, nhash, nms, last_genus, plg):
+        # TODO change all variable names to something useful
+        # TODO programming challenge! you only need to call remDot on c since
+        #  it only affects the last letter in the string
+        """
+        
+        Arguments:
+        a -- describe argument
+        b -- describe argument
+        c -- describe argument
+        nhash -- describe argument
+        nms -- describe argument
+        last_genus -- describe argument
+        plg -- describe argument
+        
+        """
         #gr =self._remDot((a+" "+b+" "+c).strip())
         if(b == ""):
             gr = self._remDot((a + " " + c).strip())
@@ -442,7 +528,7 @@ class NameFinder():
             nms.append(gr)
             nhash[self._remDot((a[0] + ". " + b + " " + c).strip())] = a[1:]
 
-    def find_names(self, text, resolvedot = False):
+    def find_names(self, text, resolvedot=False):
         """Return a string of names concatenated with a newline and a list of 
         offsets for each mention of the name in the original text.
 
