@@ -63,7 +63,7 @@ class NetiNetiTrain:
         fileName -- the file to read
 
         """
-        pdata = open(os.path.dirname(__file__) + "/"  + fileName).read()
+        pdata = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + fileName).read()
         tokens = pdata.split('\n')
         #remove trailing spaces
         tokens = map(lambda x:x.strip(), tokens)
@@ -102,7 +102,7 @@ class NetiNetiTrain:
                                     context_array, index,span), 'taxon'))
         print("# pos features.. ", len(featuresets))
         #negative data
-        ndata = open(os.path.dirname(__file__) + "/" +
+        ndata = open(os.path.dirname(os.path.realpath(__file__)) + "/" +
                      self.irrelevant_text).read()
         ntokens = nltk.word_tokenize(ndata)
         neg_trigrams = nltk.trigrams(ntokens)
@@ -386,7 +386,7 @@ class NameFinder():
 
         """
         reml = {}
-        elist = open(os.path.dirname(__file__) + "/"  + 
+        elist = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + 
                      e_list).read().split("\n")
         for a in elist:
             reml[a] = 1
@@ -819,7 +819,8 @@ class NameFinder():
         filename -- 
 
         """
-        f = open(os.path.dirname(__file__) + "/"  + filename).read()
+        f = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
+                filename).read()
         sents = nltk.sent_tokenize(f)
         tksents = [nltk.word_tokenize(a) for a in sents]
         #esents = tksents
