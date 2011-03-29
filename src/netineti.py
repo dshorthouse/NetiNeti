@@ -53,6 +53,12 @@ class NetiNetiTrain:
         self._buildFeatures(self._getTrainingData())
 
     def _splitGet(self, fileName):
+        """Takes name of a file, and returns back a list where every element
+        is a one line from the file, clenaed from trailing whitespaces..
+
+        This method is used to return a list of scientific names taken from a
+        text file whih contains name per line.
+        """
         # TODO change the method to _split_get(self, file_name)
         # TODO .split('\n') should be .splitlines()
         # TODO map is superseeded by list comprehension
@@ -94,7 +100,7 @@ class NetiNetiTrain:
             except Exception:
                 index = 0
             span = len(name_parts) - 1
-            featuresets.append((self.taxon_features(name, context_array, 
+            featuresets.append((self.taxon_features(name, context_array,
                                 index,span), 'taxon'))
             if(len(name_parts[0]) > 1 and name_parts[0][1] != "."):
                 abb_name = name_parts[0][0]+". " + " ".join(name_parts[1:])
@@ -119,19 +125,19 @@ class NetiNetiTrain:
             bg = p + " " + q
             if(p[0].isupper() and p[1:].islower() and q.islower()):
                 bgc += 1
-                featuresets.append((self.taxon_features(bg, ntokens, inx, 1), 
+                featuresets.append((self.taxon_features(bg, ntokens, inx, 1),
                                     'not-a-taxon'))
-                featuresets.append((self.taxon_features(p, ntokens, inx, 0), 
+                featuresets.append((self.taxon_features(p, ntokens, inx, 0),
                                     'not-a-taxon'))
                 if(r.islower()):
                     tgc += 1
-                    featuresets.append((self.taxon_features(tg, ntokens, 
+                    featuresets.append((self.taxon_features(tg, ntokens,
                                         inx, 2), 'not-a-taxon'))
             if(q[0].isupper() and q[1:].islower()):
                 featuresets.append((self.taxon_features(q, ntokens, inx + 1,
                                     0), 'not-a-taxon'))
             if(r[0].isupper() and r[1:].islower()):
-                featuresets.append((self.taxon_features(r, ntokens, inx + 2, 
+                featuresets.append((self.taxon_features(r, ntokens, inx + 2,
                                     0), 'not-a-taxon'))
         random.shuffle(featuresets)
         print("bg tg negative features: ", bgc + tgc)
@@ -144,8 +150,19 @@ class NetiNetiTrain:
         # TODO rename ta, t, p, tb to something useful
         # TODO remove print statements
         # TODO move creation of _tab_hash and _tokens to the __init__ method
-        """Creates an instance attribute dictionary that stores every word as
-        the key and the value is always 1.
+        """Creates a collection of one-word tokens generated from
+        a ranomized subset of scientific names. Scientific names are supplied from an
+        external file which has several millions of names. This collection of tokens
+        is stored as a dictionary to ensure uniqueness of all the tokens and make a
+        fast access to them. Tokens stored as keys of the dictionary, values are
+        irrelevant and are set to 1.
+
+        The collection is stored in as an instance variable.
+
+        Used variables:
+
+        self._all_names -- full list of all scientific names
+        self._num_tok   -- number of
 
         """
         ta = time.clock()
@@ -168,7 +185,7 @@ class NetiNetiTrain:
         """Return a dictionary of features
 
         Arguments:
-        array -- 
+        array --
         idx -- index
         start --
         stop --
@@ -237,23 +254,23 @@ class NetiNetiTrain:
         features["lastltr_of_fw_in_svl"] = j = self._populateFeatures(prts, 0,
             -1, "sc", features, "lastltr_of_fw_in_svl") in sv1
         string_weight = self._incWeight(string_weight, swt - 3, j)
-        features["lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts, 1, 
+        features["lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts, 1,
             -1, "sc", features, "lastltr_of_sw_in_sv") in sv
         string_weight = self._incWeight(string_weight, swt, j)
-        features["lastltr_of_sw_in_svl"] = j = self._populateFeatures(prts, 1, 
+        features["lastltr_of_sw_in_svl"] = j = self._populateFeatures(prts, 1,
             -1, "sc", features, "lastltr_of_sw_in_svl") in sv1
         string_weight = self._incWeight(string_weight, swt - 3, j)
         features["lastltr_of_tw_in_sv_or_svl"] = j = self._populateFeatures(
         prts, 2, -1, "sc", features, "lastltr_of_tw_in_sv_or_svl") in sv + sv1
         string_weight = self._incWeight(string_weight, swt - 2, j)
-        features["2lastltr_of_tw_in_sv_or_svl"] = self._populateFeatures(prts, 
+        features["2lastltr_of_tw_in_sv_or_svl"] = self._populateFeatures(prts,
             2, -2, "sc", features, "2lastltr_of_tw_in_sv_or_svl") in sv + sv1
         features["last_letter_fw_vwl"] = prts[0][-1] in vowels
-        features["2lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts, 
+        features["2lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts,
             0, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_fw_in_sv1"] = j = self._populateFeatures(prts, 
+        features["2lastltr_of_fw_in_sv1"] = j = self._populateFeatures(prts,
             0, -2, "sc", features, "2lastltr_of_fw_in_sv1") in sv1
-        features["2lastltr_of_fw_in_svlb"] = j = self._populateFeatures(prts, 
+        features["2lastltr_of_fw_in_svlb"] = j = self._populateFeatures(prts,
             0, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
         features["2lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts,
             1, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
@@ -262,7 +279,7 @@ class NetiNetiTrain:
         features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,
             1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
         features["first_in_table"] = self._tab_hash.has_key(
-            self._populateFeatures(prts, 0, 0, "end", features, 
+            self._populateFeatures(prts, 0, 0, "end", features,
                                    "first_in_table").lower())
         features["second_in_table"] = self._tab_hash.has_key(
             self._populateFeatures(prts, 1, 0, "end", features,
@@ -274,7 +291,7 @@ class NetiNetiTrain:
         #context_L = []
         for c in range(context_span):
             item = self._clnr.striptok(self._populateFeatures(
-                context_array, index + span + c + 1, 0, "end", features, 
+                context_array, index + span + c + 1, 0, "end", features,
                 str(c + 1) + "_context"))
             #features[str(c+1)+"_context"] = self._populateFeatures(
             #    context_array,index+span+c+1,0,"end",
@@ -286,7 +303,7 @@ class NetiNetiTrain:
                 item1 = self._clnr.striptok(self._populateFeatures(
                     context_array, index + c - context_span, 0, "end",
                     features, str(c - context_span) + "_context"))
-#               features[str(c-context_span)+"_context"] = 
+#               features[str(c-context_span)+"_context"] =
 #                   self._populateFeatures(context_array,index+c-context_span,
 #                   0,"end",features,str(c-context_span)+"_context").strip()
                 features[str(c - context_span) + "_context"] = item1
@@ -295,15 +312,15 @@ class NetiNetiTrain:
 #                if( L =="Null"):
 #                        features["pos_tag"+str(-1)+"_context"] = "UKNWN"
 #                else:
-#                        features["pos_tag"+str(-1)+"_context"] = 
+#                        features["pos_tag"+str(-1)+"_context"] =
 #                       nltk.pos_tag([features[str(-1)+"_context"]])[0][1]
 #
 #                if( R =="Null"):
 #                        features["pos_tag"+str(1)+"_context"] = "UKNWN"
 #                else:
-#                        features["pos_tag"+str(1)+"_context"] = 
+#                        features["pos_tag"+str(1)+"_context"] =
 #                       nltk.pos_tag([features[str(1)+"_context"]])[0][1]
-#       features["pos_tag"+str(1)+"_context"] = 
+#       features["pos_tag"+str(1)+"_context"] =
 #           nltk.pos_tag([features[str(1)+"_context"]])[0][1]
 #       features["pos_tag"+str(-1)+"_context"] =
 #           nltk.pos_tag([features[str(-1)+"_context"]])[0][1]
@@ -339,9 +356,9 @@ class NetiNetiTrain:
         # TODO define self._model in the __init__ method
         # TODO remove print statements
         """This changes the algorithm that nltk uses to train the model.
-        
+
         Arguments:
-        featuresets -- 
+        featuresets --
 
         """
         if(self.learning_algo == "NB"):
@@ -351,7 +368,7 @@ class NetiNetiTrain:
             self._model = NB
         elif(self.learning_algo == "MaxEnt"):
             print("MaxEnt")
-            MaxEnt = nltk.MaxentClassifier.train(featuresets, "MEGAM", 
+            MaxEnt = nltk.MaxentClassifier.train(featuresets, "MEGAM",
                                                  max_iter=15)
             #DT = nltk.DecisionTreeClassifier.train(featuresets)
             self._model = MaxEnt
@@ -370,7 +387,7 @@ class NameFinder():
     and searches through text to find names.
 
     This version supports offsets.
-    
+
     """
 
     def __init__(self, modelObject, e_list='data/new-list.txt'):
@@ -386,7 +403,7 @@ class NameFinder():
 
         """
         reml = {}
-        elist = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + 
+        elist = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
                      e_list).read().split("\n")
         for a in elist:
             reml[a] = 1
@@ -401,10 +418,14 @@ class NameFinder():
         # TODO change the variable 'a' to something useful
         # TODO could remove method from the class
         """Return the string with no dot at the end of it.
-        
+
+        removes period from words that are not an obvious genus abbreviaion
+        sometimes people abbreviate genus to 2 or 3 letters, would it be a problem?
+        we assume here that abbr is almost alwqys 1 letter
+
         Arguments:
-        a -- describe argument
-        
+        a -- token, usually the first element of a trigram
+
         """
         if(len(a) > 2 and a[-1] == '.'):
             return(a[:-1])
@@ -415,9 +436,10 @@ class NameFinder():
         # TODO change name to something useful, not _h_check
         # TODO change variables (a, w, j, e1) to something useful
         """Returns a boolean.
-        
+        checks if a word is in a black list
+
         Arguments:
-        a -- describe argument
+        a -- a token, first element of a trigram
 
         """
         a = self._remDot(a)
@@ -429,10 +451,11 @@ class NameFinder():
         # TODO change name to something useful, not _is_good_2
         # TODO change variable names (a, b, td, s1) to something useful
         """Returns a boolean.
-        
+        Checks if a bigram looks right
+
         Arguments:
-        a -- describe argument
-        b -- describe argument
+        a -- first element of a bigram or a trigram
+        b -- second element of a bigram or a trigram
 
         """
         if(len(a) > 1 and len(b) > 1):
@@ -448,11 +471,12 @@ class NameFinder():
         # TODO change variable names to something useful
         #      including a, b, c, s1, b_par_exp, s2
         """Returns a boolean.
-        
+        Checks if a trigram looks right
+
         Arguments:
-        a -- describe argument
-        b -- describe argument
-        c -- describe argument
+        a -- first element of a trigram
+        b -- second element of a trigram
+        c -- third element of a trigram
 
         """
         if(len(a) > 1 and len(b) > 1 and len(c) > 1):
@@ -479,16 +503,16 @@ class NameFinder():
         # TODO change some of the variables names to something useful
         # TODO perhaps make this more than one line?
         """Test for a taxon
-        
+
         Arguments:
         tkn -- token?
         context -- describe argument
         index -- describe argument
         span -- describe argument
-        
+
         """
         return((self._modelObject.getModel().classify(
-            self._modelObject.taxon_features(tkn, context, index, span)) == 
+            self._modelObject.taxon_features(tkn, context, index, span)) ==
             'taxon'))
 
     def _resolve(self, a, b, c, nhash, nms, last_genus, plg):
@@ -496,7 +520,7 @@ class NameFinder():
         # TODO programming challenge! you only need to call remDot on c since
         #  it only affects the last letter in the string
         """
-        
+
         Arguments:
         a -- describe argument
         b -- describe argument
@@ -505,7 +529,7 @@ class NameFinder():
         nms -- describe argument
         last_genus -- describe argument
         plg -- describe argument
-        
+
         """
         #gr =self._remDot((a+" "+b+" "+c).strip())
         if(b == ""):
@@ -514,13 +538,13 @@ class NameFinder():
             gr = self._remDot((a + " " + b + " " + c).strip())
         if(gr[1] == "." and gr[2] == " "):
             if(nhash.has_key(gr)):
-                nms.append(self._remDot((a[0] + "[" + nhash[gr] + "]" + " " + 
+                nms.append(self._remDot((a[0] + "[" + nhash[gr] + "]" + " " +
                                         b + " " + c).strip()))
             elif(last_genus and a[0] == last_genus[0]):
                 nms.append(self._remDot((a[0] + "[" + last_genus[1:] + "]" +
                                         " " + b + " " + c).strip()))
             elif(plg and a[0] == plg):
-                nms.append(self._remDot((a[0] + "[" + plg[1:] + "]" + " " + 
+                nms.append(self._remDot((a[0] + "[" + plg[1:] + "]" + " " +
                                         b + " " + c).strip()))
             else:
                 nms.append(gr)
@@ -531,15 +555,15 @@ class NameFinder():
     def find_names(self, text, resolvedot=False):
         # TODO fix variable names
         # TODO perhaps break this up into smaller functions
-        """Return a string of names concatenated with a newline and a list of 
+        """Return a string of names concatenated with a newline and a list of
         offsets for each mention of the name in the original text.
 
         Arguments:
         text -- input text
 
         Keyword Arguments:
-        resolvedot -- boolean to resolve the dot (default False)
-
+        resolvedot -- boolean to resolve full name of a genus (false by default) and not
+                      recommended for use
         """
         self._text = text
         #tok = nltk.word_tokenize(text)
@@ -579,11 +603,12 @@ class NameFinder():
         # TODO rename method to _clean_tokens or similar
         # TODO rename variables (a, b, c, a1, b1, ra, rb)
         """Cleans the tokens.
-        
+        Intelligent strip of trigram parts
+
         Arguments:
-        a -- describe the argument
-        b -- describe the argument
-        c -- describe the argument
+        a -- first element of a trigram
+        b -- second element of a trigram
+        c -- third element of a trigram
 
         """
         a1, b1 = a.strip(), b.strip()
@@ -605,12 +630,13 @@ class NameFinder():
     def _createIndex(self, token):
         # TODO rename method to _create_index or similar
         # TODO there is lots of programming cleanup that can happen here
-        # TODO rename variables, specifically oh 
+        # TODO rename variables, specifically oh
         # TODO could remove method from the class
-        """Returns a dictionary.
-        
+        """Returns a dictionary indexes for all tockens. Key is a token number in
+        the document, Value is the length of the token.
+
         Arguments:
-        token -- the token object
+        token -- list of all tokens from the document checked for scientific names
 
         """
         length = 0
@@ -627,14 +653,15 @@ class NameFinder():
         # TODO rename method to _get_offsets
         # TODO rename variables (oh, a, b, c, st)
         # TODO could remove method from the class
-        """Returns a tuple of the offsets, I hope.
+        """Returns a tuple with start and end positions of a found scientific name.
 
         Arguments:
-        oh -- describe arg
-        index -- describe arg
-        a -- describe arg
-        b -- describe arg
-        c -- describe arg
+        oh -- a dictionary containing number of tokens as keys, and corresponding starting position
+        of a token in the document agaist whih neti-neti runs as a value
+        index -- index of the first token from the found scientific name.
+        a -- first element of a trigram
+        b -- second element of a trigram
+        c -- third element of a trigram
         """
         st = a + " " + b + " " + c
         st = st.strip()
@@ -647,12 +674,15 @@ class NameFinder():
         #  neither does this method
         """Checks to see if a token is a uninomial and returns a boolean.
 
+        This method currently only allows uninomials of size larger than 5,
+        however there are uninomial which are 2 characters in size.
+
         Arguments:
-        tok -- the token to check
+        tok -- the token to check as a ponential uninomial
         """
-        if(len(tok) > 5 and tok[0].isupper() and tok[1:].islower() and 
+        if(len(tok) > 5 and tok[0].isupper() and tok[1:].islower() and
             (self._remDot(tok).isalpha() or (tok[0].isupper() and
-                                        tok[1] == "." and tok[2].islower() and 
+                                        tok[1] == "." and tok[2].islower() and
                                         self._remDot(tok[2:]).isalpha())) and
                                         self._hCheck(tok)):
             return(True)
@@ -663,7 +693,8 @@ class NameFinder():
         # TODO rename method to _ending_check or similar
         # TODO this doesn't really use the object since remdot does not
         # TODO filter can be replaced with a list comprehension
-        """Check the ending of the token and returns a boolean.
+        """Check the ending of the token. It returns True if token has an ending
+        characteristic for a word from a canonical scientific name
 
         Arguments:
         tok -- the token to check
@@ -671,7 +702,7 @@ class NameFinder():
         endings = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
                     'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
                     'opsida', 'phyceae', 'phycidae', 'phyta', 'phytin']
-        if(len(filter(lambda x: self._remDot(tok.lower()).endswith(x), 
+        if(len(filter(lambda x: self._remDot(tok.lower()).endswith(x),
                                             endings)) > 0):
             return(True)
         else:
@@ -685,9 +716,12 @@ class NameFinder():
         #  move this to separate functions
         # TODO rename all the variables. All of them. GAHHH
         """It returns this: return(nms, nnewn, nnofl).
+        takes list of all tokens from a document and returns back tuple
+        of found names. First element is a list of names, second -- names separated by
+        a new line, third offsets for each mention of the name in the document
 
         Arguments:
-        token -- describe token
+        token -- list with all tokens from the document searched for scientific names
 
         """
         icount = -1 #index as we iterate over trigrams
@@ -701,12 +735,12 @@ class NameFinder():
         if(len(token) == 2):
             if(self._isGood2(token[0], token[1]) and self._taxonTest(token[0] +
                                                                     " " +
-                                                                    token[1], 
-                                                                    token, 0, 
+                                                                    token[1],
+                                                                    token, 0,
                                                                     1)):
                 nms.append(token[0] + " " + token[1])
         elif(len(token) == 1):
-            if(len(token[0]) > 2 and token[0][0].isupper() and 
+            if(len(token[0]) > 2 and token[0][0].isupper() and
                 token[0].isalpha() and self._hCheck(token[0]) and
                 self._taxonTest(token[0], token, 0, 0)):
                 nms.append(token[0])
@@ -741,7 +775,7 @@ class NameFinder():
                         #print "passed trigram..."
                         start, end = self._getOffsets(oh, icount, a, b, c)
                         offset_list.append((start, end))
-                        self._resolve(p, q, r, nhash, nms, last_genus, 
+                        self._resolve(p, q, r, nhash, nms, last_genus,
                                       prev_last_genus)
                 elif(self._isGood2(p, q)):
                     #print "good bigram..."
@@ -752,7 +786,7 @@ class NameFinder():
                         self._resolve(p, q, "", nhash, nms, last_genus,
                                       prev_last_genus)
                 elif(self._uninomialCheck(p)):
-                    if(self._taxonTest(re.sub("\.", ". ", self._remDot(p)), 
+                    if(self._taxonTest(re.sub("\.", ". ", self._remDot(p)),
                                         token, icount, 0)):
                         start, end = self._getOffsets(oh, icount, a, "", "")
                         offset_list.append((start, end))
@@ -769,13 +803,13 @@ class NameFinder():
                         nms.append(self._remDot(p))
         try:
             if(self._isGood2(tgr[-1][-2], tgr[-1][-1])):
-                if(self._taxonTest(self._remDot(tgr[-1][-2] + " " + 
+                if(self._taxonTest(self._remDot(tgr[-1][-2] + " " +
                     tgr[-1][-1]), token, icount + 1, 1)):
-                    self._resolve(tgr[-1][-2], tgr[-1][-1], "", nhash, nms, 
+                    self._resolve(tgr[-1][-2], tgr[-1][-1], "", nhash, nms,
                     last_genus, prev_last_genus)
                     #nms.append(self._remDot(tgr[-1][-2]+" "+tgr[-1][-1]))
                 elif(self._uninomialCheck(tgr[-1][-2])):
-                    if(self._taxonTest(re.sub("\.", " ", 
+                    if(self._taxonTest(re.sub("\.", " ",
                         self._remDot(tgr[-1][-2])), token, icount + 1, 0)):
                         nms.append(self._remDot(tgr[-1][-2]))
         except Exception:
@@ -812,11 +846,16 @@ class NameFinder():
         # TODO rename to embed_names or similar
         # TODO change variable names
         # TODO self should be first method argument
-        """Describe method
+        """
+        Used to create a text with randomly placed scientific names in it
+        (perhaps for testing purposes).
+
+        Note: such a text will not have context relevant to the embedded
+        scientific names. I do not think this method is used anymore.
 
         Arguments:
-        lst -- 
-        filename -- 
+        lst -- list of scientific names
+        filename -- file name with a text
 
         """
         f = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
@@ -846,7 +885,7 @@ class TextClean():
         returns the stripped string and the number of characters it stripped.
 
         Arguments:
-        t --
+        t -- a one word token which might have trailing non alpha characters
 
         """
         i = 0
@@ -867,8 +906,11 @@ class TextClean():
         """This takes a token and strips non alpha characters off the right. It
         returns the stripped string and the number of characters it stripped.
 
+        amount of stripped characters allows to calculate locations of found
+        scientific names within the original document
+
         Arguments:
-        t --
+        t -- a one word token
 
         """
         j = -1
@@ -883,14 +925,17 @@ class TextClean():
             return('', 0)
         else:
             return(t[:j + 1], j + 1)
-    
+
     def striptok(self, t):
+
         # TODO rename method
         # TODO rename variables
         """This combines leftStrip and rightStrip into one method.
+        Returns back token without trailing non alpha characters
 
         Arguments:
-        t --
+        t -- a one word token which might contain trailing non alpha characters
+             like parentheses, comma, etc...
 
         """
         return(self.rightStrip(self.leftStrip(t)[0])[0])
