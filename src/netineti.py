@@ -19,8 +19,9 @@ import os
 #import psyco
 
 class NetiNetiTrain:
-    """A class that defines the training algorithm and the training files
-    and actually trains a natrual language toolkit object (nltk)
+    """A class that defines the training algorithm and the training files and 
+    actually trains a natrual language toolkit object (nltk)
+
     """
     def __init__(self, species_train="data/New_sp_contexts.txt",
                  irrelevant_text="data/pictorialgeo.txt",
@@ -58,6 +59,7 @@ class NetiNetiTrain:
 
         This method is used to return a list of scientific names taken from a
         text file whih contains name per line.
+
         """
         # TODO change the method to _split_get(self, file_name)
         # TODO .split('\n') should be .splitlines()
@@ -238,12 +240,18 @@ class NetiNetiTrain:
         #prts = [self._clnr.striptok(pt) for pt in prts]
         #if(lc =="."):
         #       prts[0] = prts[0]+"."
+
+        # This relies on side effects of the method. NO NO NO NO NO
+        # this gets the "last three characters of the first word"
         self._populateFeatures(prts, 0, -3, "end", features, "last3_first")
+        # this gets the "last three characters of the second word"
         self._populateFeatures(prts, 1, -3, "end", features, "last3_second")
+        # this gets the "last three characters of the third word"
         self._populateFeatures(prts, 2, -3, "end", features, "last3_third")
         self._populateFeatures(prts, 0, -2, "end", features, "last2_first")
         self._populateFeatures(prts, 1, -2, "end", features, "last2_second")
         self._populateFeatures(prts, 2, -2, "end", features, "last2_third")
+        # pretty sure sc = single character
         self._populateFeatures(prts, 0, 0, "sc", features, "first_char")
         self._populateFeatures(prts, 0, -1, "sc", features, "last_char")
         self._populateFeatures(prts, 0, 1, "sc", features, "second_char")
