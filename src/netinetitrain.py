@@ -69,11 +69,15 @@ def build_table(filename):
     filename -- the name of the file to build a table out of
 
     """
+    # let's use a set since we want a unique list
     names = set()
     lines = split_get(filenames)
+    # we have to shuffle it, the interwebz said so
     lines = random.shuffle(lines)
     for line in lines:
+        # get each individual word from each line
         for name in line.split(" "):
+            # to build a set of unique words from a file
             names.add(name.lower())
     return names
 
@@ -82,20 +86,78 @@ def get_basic_features(sentence):
     words and then builds a dictionary of features of the word.
 
     Arguments:
-    trigram -- A trigram, e.g. Gorilla gorilla gorilla
+    stenence -- A trigram or bigram, usually e.g. Gorilla gorilla gorilla
 
     """
     features = {}
+    letter_lists = {'sv': ['a', 'i', 's', 'm'],
+            'sv1': ['e', 'o'],
+            'svlb': ['i', 'u'],
+            'vowels': ['a', 'e', 'i', 'o', 'u'],
+    }
     names = sentence.split(" ")
+    string_weight = 0
+    # generate numbers and names (1, Gorilla), (2, gorilla), (3, gorilla)
     for i, name in enumerate(names, 1):
         word = "word_%s" % (i)
-        features["%s_first_char" % word] = name[0]
-        features["%s_second_char" % word] = name[1]
+        # going to comment these out until I know they get used
+        #features["%s_first_char" % word] = name[0]
+        #features["%s_second_char" % word] = name[1]
         features["%s_last_char" % word] = name[-1]
         features["%s_second_to_last_char" % word] = name[-2]
-        features["%s_last_three_chars" % word] = name[-3:]
-        features["%s_last_two_chars" % word] = name[-2:]
-    return features
+        #features["%s_last_three_chars" % word] = name[-3:]
+        #features["%s_last_two_chars" % word] = name[-2:]
+    # just build the features by hand now, we can be clever later.
+    features["word_1_last_char_in_vowels"] = features["word_1_last_char"] in letter_lists['vowels']
+    features["word_1_last_char_in_sv"] = features["word_1_last_char"] in letter_lists['sv']
+    features["word_1_last_char_in_sv1"] = features["word_1_last_char"] in letter_lists['sv1']
+    features["word_1_second_to_last_char_in_sv"] = features["word_1_second_to_last_char"] in letter_lists['sv']
+    features["word_1_second_to_last_char_in_sv1"] = features["word_1_second_to_last_char"] in letter_lists['sv1']
+    features["word_1_second_to_last_char_in_svlb"] = features["word_1_second_to_last_char"] in letter_lists['svlb']
+    features["word_2_last_char_in_sv"] = features["word_2_last_char"] in letter_lists['sv']
+    features["word_2_last_char_in_sv1"] = features["word_2_last_char"] in letter_lists['sv1']
+    features["word_2_second_to_last_char_in_sv"] = features["word_2_second_to_last_char"] in letter_lists['sv']
+    features["word_2_second_to_last_char_in_sv1"] = features["word_2_second_to_last_char"] in letter_lists['sv1']
+    features["word_2_second_to_last_char_in_svlb"] = features["word_2_second_to_last_char"] in letter_lists['svlb']
+    features["word_3_last_char_in_vowels"] = features["word_3_last_char"] in letter_lists['vowels']
+    features["word_3_last_char_in_sv_or_sv1"] = features["word_3_last_char"] in letter_lists['sv'] + letter_lists['sv1']
+    features["word_3_second_to_last_char_in_sv_or_sv1"] = features["word_3_secont_to_last_char"] in letter_lists['sv'] + letter_lists['sv1']
+
+    if (features["word_1_last_char_in_sv"]):
+        string_weight = string_weight + 5
+    if (features["word_1_last_char_in_sv1"]):
+        string_weight = string_weight + 2
+    if (features["word_2_last_char_in_sv"]):
+        string_weight = string_weight + 5
+    if (features["word_2_last_char_in_sv1"]):
+        string_weight = string_weight + 2
+    if (features["word_3_second_to_last_char_in_sv_or_sv1"]):
+        string_weight = string_weight + 3
+    # change string weight if
+    # last letter of first word in sv        | 5
+    # last letter of first wird in sv1       | 5 - 3
+    # last letter of second word in sv       | 5
+    # last letter of second word in sv1      | 5 - 3
+    # last letter of third word in sv or sv1 | 5 - 2
+    # vowels
+    # last letter of first word in vowels?
+    # sv
+    # last letter of first word in sv
+    # last letter of second word in sv
+    # second to last letter of first word in sv
+    # second to last letter of second word in sv
+    # sv1
+    # last letter of first word in sv1
+    # last letter of second word in sv1
+    # second to last letter of first word in sv1
+    # second to last letter of seocnd word in sv1
+    # svlb
+    # second to last letter of first word in svlb
+    # second to last letter of second word in svlb
+    # sv + sv1
+    # last letter of third word in sv or sv1
+    # second to last letter of third word in sv or sv1
+    return features, string_weight
 
 def split_get(filename):
     """A helper function to return a list of each line of a file with 
@@ -219,56 +281,8 @@ class NetiNetiTrain:
         token = token.strip()
         context_span = self._context_span
         # a now partially populated features dictionary
-        features = get_basic_features(token)
-        # swt =>
-        weight_increment = 5
-        ll_weight_reduction = 3
-        pl_weight_reduction = 2
-        vowels = ['a', 'e', 'i', 'o', 'u']
-        # sv =>
-        good_last_letters = ['a', 'i', 's', 'm']#last letter (LL) weight
-        # svl =>
-        bad_last_letters = ['e', 'o']# Reduced LL weight
-        # svlb =>
-        svlb = ['i', 'u']# penultimate L weight
-        string_weight = 0
+        features, string_weight = get_basic_features(token)
         
-        features["word_1_last_char_in_gll"]
-
-        features["lastltr_of_fw_in_sv"] = features["last_char"] in sv
-        if(features["lastltr_of_fw_in_sv"]):
-            string_weight = string_weight + weight_increment
-        features["lastltr_of_fw_in_svl"] = features["last_char"] in svl
-        if(features["lastltr_of_fw_in_svl"]):
-            starting_weight = starting_weight + weight_increment - ll_weight_reduction
-        #features["lastltr_of_sw_in_sv"] = features["last_char"] in
-        
-        j = self._populateFeatures(prts, 1,
-            -1, "sc", features, "lastltr_of_sw_in_sv") in sv
-        string_weight = self._incWeight(string_weight, swt, j)
-        features["lastltr_of_sw_in_svl"] = j = self._populateFeatures(prts, 1,
-            -1, "sc", features, "lastltr_of_sw_in_svl") in sv1
-        string_weight = self._incWeight(string_weight, swt - 3, j)
-        features["lastltr_of_tw_in_sv_or_svl"] = j = self._populateFeatures(
-        prts, 2, -1, "sc", features, "lastltr_of_tw_in_sv_or_svl") in sv + sv1
-        string_weight = self._incWeight(string_weight, swt - 2, j)
-        features["2lastltr_of_tw_in_sv_or_svl"] = self._populateFeatures(prts,
-            2, -2, "sc", features, "2lastltr_of_tw_in_sv_or_svl") in sv + sv1
-        features["last_letter_fw_vwl"] = prts[0][-1] in vowels
-        features["2lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts,
-            0, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_fw_in_sv1"] = j = self._populateFeatures(prts,
-            0, -2, "sc", features, "2lastltr_of_fw_in_sv1") in sv1
-        features["2lastltr_of_fw_in_svlb"] = j = self._populateFeatures(prts,
-            0, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["2lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts,
-            1, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_sw_in_sv1"] = j = self._populateFeatures(prts,
-            1, -2, "sc", features, "2lastltr_of_sw_in_sv1") in sv1
-        features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,
-            1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-
-
         features["first_in_table"] = self._tab_hash.has_key(
             self._populateFeatures(prts, 0, 0, "end", features,
                                    "first_in_table").lower())
