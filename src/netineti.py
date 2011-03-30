@@ -286,6 +286,7 @@ class NetiNetiTrain:
             1, -2, "sc", features, "2lastltr_of_sw_in_sv1") in sv1
         features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,
             1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
+        # has_key is deprecated.
         features["first_in_table"] = self._tab_hash.has_key(
             self._populateFeatures(prts, 0, 0, "end", features,
                                    "first_in_table").lower())
@@ -579,6 +580,8 @@ class NameFinder():
         #text = re.sub('\n|\{|\}|,|"'," ",text)
         tok = text.split(" ")
         #tok = [b for a in tok for b in a.split("\t")]
+        # no. fuck no. I have no idea why this is doing this
+        # it makes a list that repeats the paragraph (WORD COUNT) TIMES
         tok = [b for a in tok for b in a.split("\n")]
         names, newnames, offsets = self.findNames(tok)
         sn = set(names)
