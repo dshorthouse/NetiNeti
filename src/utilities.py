@@ -199,3 +199,68 @@ def split_get(filename):
     """
     return [line.strip() for line in codecs.open(filename, 'r', 'utf-8').readlines()]
 
+def remove_dot(string):
+    """Return the string with no dot at the end of it.
+
+    Actually, we are only assuming the abbr is 2 or more leters.
+    Perhaps it should be >=?
+
+    removes period from words that are not an obvious genus abbreviaion
+    sometimes people abbreviate genus to 2 or 3 letters, would it be a problem?
+    we assume here that abbr is almost alwqys 1 letter
+
+    Arguments:
+    a -- token, usually the first element of a trigram
+
+    """
+    if(len(string) > 2 and string[-1] == '.'):
+        return string[:-1]
+    else:
+        return string
+
+def create_index(word_array):
+    """Returns a dictionary index of every word in the array. The key is the
+    order in which the word appears in the document, the value is the 
+    position of the starting character in the document.
+
+    Arguments:
+    token -- list of all tokens from the document checked for scientific names
+
+    """
+    length = 0
+    index = {}
+    for i, word in enumerate(word_array):
+        index[i] = length
+        length = length + len(word) + 1
+    return index
+
+def get_offsets(word_array, index, first, second, third):
+    """Returns a tuple with start and end positions of a found scientific name.
+
+    Arguments:
+    index -- a dictionary containing number of tokens as keys, and corresponding starting position
+    of a token in the document agaist whih neti-neti runs as a value
+    token_index -- index of the first token from the found scientific name.
+    first -- first element of a trigram
+    second -- second element of a trigram
+    third -- third element of a trigram
+    """
+    name = first.strip() + " " + second.strip() + " " + third.strip()
+    return word_array[token_index], word_array[token_index] + len(name)
+
+def check_end(word):
+    """Check the ending of the token. It returns True if token has an ending
+    characteristic for a word from a canonical scientific name
+
+    Arguments:
+    tok -- the token to check
+    """
+    ends = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
+                'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
+                'opsida', 'phyceae', 'phycidae', 'phyta', 'phytin']
+    for value in (remove_dot(word.lower()).endswith(end) for end in ends):
+        if value:
+            return True
+    return False
+
+#def clean_token

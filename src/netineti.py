@@ -408,12 +408,13 @@ class NameFinder():
         modelObject -- maybe the trained NetiNetiTrain object?
 
         Keyword Arguments:
-        e_list -- describe argument (default "data/new-list.txt")
+        e_list -- a list of exceptions (default "data/new-list.txt")
 
         """
         reml = {}
         elist = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
                      e_list).read().split("\n")
+        # Use a set
         for a in elist:
             reml[a] = 1
         self._remlist = reml
