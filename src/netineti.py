@@ -1,5 +1,4 @@
-# Machine Learning based approach to find scientific names
-# Input: Any text preferably in Engish
+# Machine Learning based approach to find scientific names # Input: Any text preferably in Engish
 # Output : A list of scientific names
 
 """
@@ -16,64 +15,77 @@ import random
 import re
 import os
 
-#import psyco
-
-class NetiNetiTrain:
+class NetiNetiTrainer:
     """A class that defines the training algorithm and the training files
     and actually trains a natrual language toolkit object (nltk)
     """
-    def __init__(self, species_train="data/New_sp_contexts.txt",
-                 irrelevant_text="data/pictorialgeo.txt",
-                 all_names="data/millionnames.txt", learning_algo="NB",
-                 num_tok_train=10000, num_neg_tg=5000, context_span=1):
+    def __init__(self, positive_training_file = "data/New_sp_contexts.txt",
+                 negative_training_file = "data/pictorialgeo.txt",
+                 sci_names_file = "data/millionnames.txt", learning_algorithm="NB",
+                 sci_names_training_num = 10000, negative_trigrams_num = 5000, context_span=1):
         # TODO Too many arguments, perhaps create a TrainingFiles Class?
         """Builds and trains the NetiNeti model
 
         Keyword arguments:
-        species_train -- describe arg (default "data/New_sp_contexts.txt")
-        irrelevant_text -- describe arg (default "data/pictorialgeo.txt")
-        all_names -- describe arg (default "data/millionnames.txt")
-        learning_algo -- the algorithm to train with (default "NB")
-        num_tok_train -- number of tokens to train on? (default 10000)
-        num_neg_tg -- describe arg (default 5000)
-        context_span -- describe arg (default 1)
+        positive_training_file -- text with scientific names and a text that contains them (default "data/New_sp_contexts.txt")
+        negative_training_file -- text without scientific names (default "data/pictorialgeo.txt")
+        sci_names_file -- text containing only scientific names -- one name per line (default "data/millionnames.txt")
+        learning_algorithm -- the algorithm to train with (default "Naive Bayesian: NB")
+        sci_names_training_num -- number of scientific names from sci_names_file to use for training (default 10000)
+        negative_trigrams_num -- number of negative trigrams to build for training (default 5000)
+        context_span -- number of surrounding words from either side to use for context training (default 1)
 
         """
-        self._clnr = TextClean()
-        self.species_train = species_train
-        self.irrelevant_text = irrelevant_text
-        self._num_tok = num_tok_train
-        self._num_neg_tg = num_neg_tg
+        self._text_cleaner = TextClean()
+        self.positive_training_file = positive_training_file
+        self.negative_training_file = negative_training_file
+        self._sci_names_training_num = sci_names_training_num
+        self._negative_trigrams_num = negative_trigrams_num
         self._context_span = context_span
-        self._all_names = all_names
-        self.learning_algo = learning_algo
-        #psyco.bind(self._getTrainingData)
-        #psyco.bind(self.taxon_features)
-        self._buildTable()
+        self._sci_names_file = sci_names_file
+        self.learning_algorithm = learning_algorithm
+
+        self._sci_names, self._token_dict = self._tokenize_sci_names()
+        print len(self._sci_names)
+        print len(self._token_dict.keys())
         self._buildFeatures(self._getTrainingData())
 
-    def _splitGet(self, fileName):
-        """Takes name of a file, and returns back a list where every element
-        is a one line from the file, clenaed from trailing whitespaces..
+    def _tokenize_sci_names(self):
+        # TODO rename method to _build_table
+        # TODO Do we really need to time this?
+        # TODO rename ta, t, p, tb to something useful
+        # TODO remove print statements
+        # TODO move creation of _token_dict and _sci_names to the __init__ method
+        """Returns a list of random scientific names and a dictionary of
+        one-word tokens generated from the scientific names.
 
-        This method is used to return a list of scientific names taken from a
-        text file whih contains name per line.
+        Scientific names are supplied in an external file which has
+        several million names. This collection of tokens is stored as a
+        dictionary to ensure uniqueness of all tokens and make
+        fast access to them. Tokens stored as keys of the dictionary,
+        values are irrelevant and are set to 1.
         """
-        # TODO change the method to _split_get(self, file_name)
-        # TODO .split('\n') should be .splitlines()
-        # TODO map is superseeded by list comprehension
-        # TODO could remove method from the class
+        all_sci_names = self._file_lines(self._sci_names_file)
+        random.shuffle(all_sci_names)
+        sci_names = all_sci_names[:self._sci_names_training_num]
+        token_dict = {}
+        for sci_name in all_sci_names:
+            words = sci_name.split(' ') #TODO change to split() to avoid empty token
+            for word in words:
+                token_dict[word.lower()] = 1
+        #print(len(token_dict))
+        return (sci_names, token_dict)
+
+    def _file_lines(self, filename):
+        # TODO remove method from the class
         """Return a list of the lines of the input file.
 
         Arguments:
-        fileName -- the file to read
-
+        filename -- the file to read
         """
-        pdata = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + fileName).read()
-        tokens = pdata.split('\n')
-        #remove trailing spaces
-        tokens = map(lambda x:x.strip(), tokens)
-        return(tokens)
+        lines = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + filename).readlines()
+        lines = [ line.strip() for line in lines ]
+        return(lines)
 
     def _getTrainingData(self):
         # TODO Too many local variables, perhaps make this several methods?
@@ -84,9 +96,9 @@ class NetiNetiTrain:
         """Builds and returns the feature sets for the algorithm"""
         #positive_data with contextual information
         featuresets = []
-        ptokens = self._splitGet(self.species_train)
+        ptokens = self._file_lines(self.positive_training_file)
         print("Number of contexts: ", len(ptokens))
-        just_toks = [jtok + "---" + jtok for jtok in self._tokens]
+        just_toks = [jtok + "---" + jtok for jtok in self._sci_names]
         print("Number of toks: ", len(just_toks))
         ptokens = ptokens + just_toks
         ptokens = filter(lambda x: len(x) > 0, ptokens)
@@ -109,7 +121,7 @@ class NetiNetiTrain:
         print("# pos features.. ", len(featuresets))
         #negative data
         ndata = open(os.path.dirname(os.path.realpath(__file__)) + "/" +
-                     self.irrelevant_text).read()
+                     self.negative_training_file).read()
         ntokens = nltk.word_tokenize(ndata)
         neg_trigrams = nltk.trigrams(ntokens)
         print("trigrams: ", len(neg_trigrams))
@@ -118,7 +130,7 @@ class NetiNetiTrain:
         tgc = 0
         print("Building neg features")
         for p, q, r in neg_trigrams:
-            if(tgc > self._num_neg_tg):
+            if(tgc > self._negative_trigrams_num):
                 break
             inx += 1
             tg = p + " " + q + " " + r
@@ -143,40 +155,6 @@ class NetiNetiTrain:
         print("bg tg negative features: ", bgc + tgc)
         print("total examples: ", len(featuresets))
         return(featuresets)
-
-    def _buildTable(self):
-        # TODO rename method to _build_table
-        # TODO Do we really need to time this?
-        # TODO rename ta, t, p, tb to something useful
-        # TODO remove print statements
-        # TODO move creation of _tab_hash and _tokens to the __init__ method
-        """Creates a collection of one-word tokens generated from
-        a ranomized subset of scientific names. Scientific names are supplied from an
-        external file which has several millions of names. This collection of tokens
-        is stored as a dictionary to ensure uniqueness of all the tokens and make a
-        fast access to them. Tokens stored as keys of the dictionary, values are
-        irrelevant and are set to 1.
-
-        The collection is stored in as an instance variable.
-
-        Used variables:
-
-        self._all_names -- full list of all scientific names
-        self._num_tok   -- number of
-
-        """
-        ta = time.clock()
-        ttokens = self._splitGet(self._all_names)
-        random.shuffle(ttokens)
-        self._tokens = ttokens[:self._num_tok]
-        self._tab_hash = {}
-        for t in ttokens:
-            prts = t.split(" ")
-            for p in prts:
-                self._tab_hash[p.lower()] = 1
-        tb = time.clock()
-        print(str(tb - ta))
-        print(len(self._tab_hash))
 
     def _populateFeatures(self, array, idx, start, stop, features, name):
         # TODO change method to _populate_features
@@ -235,7 +213,7 @@ class NetiNetiTrain:
         string_weight = 0
         prts = token.split(" ")
         #lc = self._populateFeatures(prts,0,-1,"sc",features,"last_char")
-        #prts = [self._clnr.striptok(pt) for pt in prts]
+        #prts = [self._text_cleaner.striptok(pt) for pt in prts]
         #if(lc =="."):
         #       prts[0] = prts[0]+"."
         self._populateFeatures(prts, 0, -3, "end", features, "last3_first")
@@ -278,19 +256,19 @@ class NetiNetiTrain:
             1, -2, "sc", features, "2lastltr_of_sw_in_sv1") in sv1
         features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,
             1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["first_in_table"] = self._tab_hash.has_key(
+        features["first_in_table"] = self._token_dict.has_key(
             self._populateFeatures(prts, 0, 0, "end", features,
                                    "first_in_table").lower())
-        features["second_in_table"] = self._tab_hash.has_key(
+        features["second_in_table"] = self._token_dict.has_key(
             self._populateFeatures(prts, 1, 0, "end", features,
                                    "second_in_table").lower())
-        features["third_in_table"] = self._tab_hash.has_key(
+        features["third_in_table"] = self._token_dict.has_key(
             self._populateFeatures(prts, 2, 0, "end", features,
                                    "third_in_table").lower())
         #context_R = []
         #context_L = []
         for c in range(context_span):
-            item = self._clnr.striptok(self._populateFeatures(
+            item = self._text_cleaner.striptok(self._populateFeatures(
                 context_array, index + span + c + 1, 0, "end", features,
                 str(c + 1) + "_context"))
             #features[str(c+1)+"_context"] = self._populateFeatures(
@@ -300,7 +278,7 @@ class NetiNetiTrain:
             if(index + c - context_span < 0):
                 features[str(c - context_span) + "_context"] = 'Null'
             else:
-                item1 = self._clnr.striptok(self._populateFeatures(
+                item1 = self._text_cleaner.striptok(self._populateFeatures(
                     context_array, index + c - context_span, 0, "end",
                     features, str(c - context_span) + "_context"))
 #               features[str(c-context_span)+"_context"] =
@@ -361,18 +339,18 @@ class NetiNetiTrain:
         featuresets --
 
         """
-        if(self.learning_algo == "NB"):
+        if(self.learning_algorithm == "NB"):
             #WNB = nltk.classify.weka.WekaClassifier.train("Naive_Bayes_weka",
             #featuresets,"naivebayes")
             NB = nltk.NaiveBayesClassifier.train(featuresets)
             self._model = NB
-        elif(self.learning_algo == "MaxEnt"):
+        elif(self.learning_algorithm == "MaxEnt"):
             print("MaxEnt")
             MaxEnt = nltk.MaxentClassifier.train(featuresets, "MEGAM",
                                                  max_iter=15)
             #DT = nltk.DecisionTreeClassifier.train(featuresets)
             self._model = MaxEnt
-        elif(self.learning_algo == "DecisionTree"):
+        elif(self.learning_algorithm == "DecisionTree"):
             print("Decision Tree is learning")
             DTree = nltk.DecisionTreeClassifier.train(featuresets, 0.05)
             self._model = DTree
@@ -409,7 +387,7 @@ class NameFinder():
             reml[a] = 1
         self._remlist = reml
         self._modelObject = modelObject
-        self._clnr = TextClean()
+        self._text_cleaner = TextClean()
         #psyco.bind(self.findNames)
         #psyco.bind(self.find_names)
 
@@ -615,17 +593,17 @@ class NameFinder():
         ra, rb = a1, b1
         if((len(a1) > 1)):
             if(a1[-1] == "."):
-                ra = self._clnr.leftStrip(a1)[0]
+                ra = self._text_cleaner.leftStrip(a1)[0]
             else:
-                ra = self._clnr.striptok(a1)
+                ra = self._text_cleaner.striptok(a1)
         if(len(b1) > 1):
             if(b1[0] + b1[-1] == "()"):
                 pass
             elif(b1[-1] == "-"):
-                rb = self._clnr.leftStrip(b1)[0]
+                rb = self._text_cleaner.leftStrip(b1)[0]
             else:
-                rb = self._clnr.striptok(b1)
-        return(ra, rb, self._clnr.striptok(c))
+                rb = self._text_cleaner.striptok(b1)
+        return(ra, rb, self._text_cleaner.striptok(c))
 
     def _createIndex(self, token):
         # TODO rename method to _create_index or similar
@@ -824,16 +802,16 @@ class NameFinder():
             if(pts[0][0] + pts[0][-1] == "()"):
                 #print nme+"...."
                 no1 = o[0]
-                no2 = o[1] + self._clnr.rightStrip(nme)[1]
+                no2 = o[1] + self._text_cleaner.rightStrip(nme)[1]
             else:
                 #print nme
                 #print "o1 ",o[0]
                 #print "o2 ",o[1]
-                #print "left strip...", self._clnr.leftStrip(nme)[1]
-                #print "right strip...",self._clnr.rightStrip(nme)[1]
+                #print "left strip...", self._text_cleaner.leftStrip(nme)[1]
+                #print "right strip...",self._text_cleaner.rightStrip(nme)[1]
                 #print "................."
-                no1 = o[0] + self._clnr.leftStrip(nme)[1]
-                no2 = o[1] + self._clnr.rightStrip(nme)[1]
+                no1 = o[0] + self._text_cleaner.leftStrip(nme)[1]
+                no2 = o[1] + self._text_cleaner.rightStrip(nme)[1]
             tj = self._text[no1:no2]
             nnewn.append(tj)
             nnofl.append((no1, no2))
