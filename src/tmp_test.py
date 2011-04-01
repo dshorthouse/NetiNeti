@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-from netineti import NetiNetiTrain
+from netineti import NetiNetiTrainer
 from netineti import NameFinder
 import subprocess
 import shlex
 
-neti_neti = NetiNetiTrain()
+neti_neti = NetiNetiTrainer()
 name_finder = NameFinder(neti_neti)
 
 result = name_finder.find_names(open("data/test.txt").read())
