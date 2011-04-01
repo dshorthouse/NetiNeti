@@ -39,69 +39,51 @@ class NetiNetiTrainer:
         self._text_cleaner = TextClean()
         self.positive_training_file = positive_training_file
         self.negative_training_file = negative_training_file
-        self._num_tok = sci_names_training_num
+        self._sci_names_training_num = sci_names_training_num
         self._negative_trigrams_num = negative_trigrams_num
         self._context_span = context_span
         self._sci_names_file = sci_names_file
         self.learning_algorithm = learning_algorithm
 
-        self._buildTable()
+        self._sci_names, self._token_dict = self._tokenize_sci_names()
+        print len(self._sci_names)
+        print len(self._token_dict.keys())
         self._buildFeatures(self._getTrainingData())
 
-    def _buildTable(self):
+    def _tokenize_sci_names(self):
         # TODO rename method to _build_table
         # TODO Do we really need to time this?
         # TODO rename ta, t, p, tb to something useful
         # TODO remove print statements
-        # TODO move creation of _tab_hash and _tokens to the __init__ method
-        """Creates a collection of one-word tokens generated from
-        a ranomized subset of scientific names. Scientific names are supplied from an
-        external file which has several millions of names. This collection of tokens
-        is stored as a dictionary to ensure uniqueness of all the tokens and make a
-        fast access to them. Tokens stored as keys of the dictionary, values are
-        irrelevant and are set to 1.
+        # TODO move creation of _token_dict and _sci_names to the __init__ method
+        """Returns a list of random scientific names and a dictionary of
+        one-word tokens generated from the scientific names.
 
-        The collection is stored in as an instance variable.
-
-        Used variables:
-
-        self._sci_names_file -- full list of all scientific names
-        self._num_tok   -- number of
-
+        Scientific names are supplied in an external file which has
+        several million names. This collection of tokens is stored as a
+        dictionary to ensure uniqueness of all tokens and make
+        fast access to them. Tokens stored as keys of the dictionary,
+        values are irrelevant and are set to 1.
         """
-        ta = time.clock()
-        ttokens = self._file_lines(self._sci_names_file)
-        random.shuffle(ttokens)
-        self._tokens = ttokens[:self._num_tok]
-        self._tab_hash = {}
-        for t in ttokens:
-            prts = t.split(" ")
-            for p in prts:
-                self._tab_hash[p.lower()] = 1
-        tb = time.clock()
-        print(str(tb - ta))
-        print(len(self._tab_hash))
+        all_sci_names = self._file_lines(self._sci_names_file)
+        random.shuffle(all_sci_names)
+        sci_names = all_sci_names[:self._sci_names_training_num]
+        token_dict = {}
+        for sci_name in all_sci_names:
+            words = sci_name.split(' ') #TODO change to split() to avoid empty token
+            for word in words:
+                token_dict[word.lower()] = 1
+        #print(len(token_dict))
+        return (sci_names, token_dict)
 
-
-    def _file_lines(self, fileName):
-        """Takes name of a file, and returns back a list where every element
-        is a one line from the file, clenaed from trailing whitespaces..
-
-        This method is used to return a list of scientific names taken from a
-        text file which contains one name per line.
-        """
-        # TODO change the method to _split_get(self, file_name)
-        # TODO .split('\n') should be .splitlines()
-        # TODO map is superseeded by list comprehension
-        # TODO could remove method from the class
+    def _file_lines(self, filename):
+        # TODO remove method from the class
         """Return a list of the lines of the input file.
 
         Arguments:
-        fileName -- the file to read
-
+        filename -- the file to read
         """
-        lines = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + fileName).readlines()
-        #remove trailing spaces
+        lines = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + filename).readlines()
         lines = [ line.strip() for line in lines ]
         return(lines)
 
@@ -116,7 +98,7 @@ class NetiNetiTrainer:
         featuresets = []
         ptokens = self._file_lines(self.positive_training_file)
         print("Number of contexts: ", len(ptokens))
-        just_toks = [jtok + "---" + jtok for jtok in self._tokens]
+        just_toks = [jtok + "---" + jtok for jtok in self._sci_names]
         print("Number of toks: ", len(just_toks))
         ptokens = ptokens + just_toks
         ptokens = filter(lambda x: len(x) > 0, ptokens)
@@ -274,13 +256,13 @@ class NetiNetiTrainer:
             1, -2, "sc", features, "2lastltr_of_sw_in_sv1") in sv1
         features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,
             1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["first_in_table"] = self._tab_hash.has_key(
+        features["first_in_table"] = self._token_dict.has_key(
             self._populateFeatures(prts, 0, 0, "end", features,
                                    "first_in_table").lower())
-        features["second_in_table"] = self._tab_hash.has_key(
+        features["second_in_table"] = self._token_dict.has_key(
             self._populateFeatures(prts, 1, 0, "end", features,
                                    "second_in_table").lower())
-        features["third_in_table"] = self._tab_hash.has_key(
+        features["third_in_table"] = self._token_dict.has_key(
             self._populateFeatures(prts, 2, 0, "end", features,
                                    "third_in_table").lower())
         #context_R = []
