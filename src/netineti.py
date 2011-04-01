@@ -37,8 +37,8 @@ class NetiNetiTrainer:
 
         """
         self._text_cleaner = TextClean()
-        self.positive_training_file = positive_training_file
-        self.negative_training_file = negative_training_file
+        self._positive_training_file = positive_training_file
+        self._negative_training_file = negative_training_file
         self._sci_names_training_num = sci_names_training_num
         self._negative_trigrams_num = negative_trigrams_num
         self._context_span = context_span
@@ -46,16 +46,10 @@ class NetiNetiTrainer:
         self.learning_algorithm = learning_algorithm
 
         self._sci_names, self._token_dict = self._tokenize_sci_names()
-        print len(self._sci_names)
-        print len(self._token_dict.keys())
         self._buildFeatures(self._getTrainingData())
 
     def _tokenize_sci_names(self):
-        # TODO rename method to _build_table
-        # TODO Do we really need to time this?
-        # TODO rename ta, t, p, tb to something useful
         # TODO remove print statements
-        # TODO move creation of _token_dict and _sci_names to the __init__ method
         """Returns a list of random scientific names and a dictionary of
         one-word tokens generated from the scientific names.
 
@@ -70,58 +64,26 @@ class NetiNetiTrainer:
         sci_names = all_sci_names[:self._sci_names_training_num]
         token_dict = {}
         for sci_name in all_sci_names:
-            words = sci_name.split(' ') #TODO change to split() to avoid empty token
+            words = sci_name.split(" ") #TODO change to split() to avoid empty token. Then figure out how to eliminate empty token from other places
             for word in words:
                 token_dict[word.lower()] = 1
-        #print(len(token_dict))
+        print(len(token_dict))
         return (sci_names, token_dict)
 
-    def _file_lines(self, filename):
-        # TODO remove method from the class
-        """Return a list of the lines of the input file.
-
-        Arguments:
-        filename -- the file to read
-        """
-        lines = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + filename).readlines()
-        lines = [ line.strip() for line in lines ]
-        return(lines)
-
     def _getTrainingData(self):
-        # TODO Too many local variables, perhaps make this several methods?
         # TODO rename _getTrainingData to _get_training_data
-        # TODO filter can be replaced by list comprehension
-        # TODO We should catch a better Exception
-        # TODO Rename the variables: p, q, r, tg, bg
         """Builds and returns the feature sets for the algorithm"""
-        #positive_data with contextual information
+
+        positive_training_data = self._get_positive_training_data()
+        featuresets = self._get_positive_featuresets(positive_training_data)
+        featuresets += self._get_negative_featuresets()
+        return featuresets
+
+    def _get_negative_featuresets(self):
+        # TODO Rename the variables: p, q, r, tg, bg
         featuresets = []
-        ptokens = self._file_lines(self.positive_training_file)
-        print("Number of contexts: ", len(ptokens))
-        just_toks = [jtok + "---" + jtok for jtok in self._sci_names]
-        print("Number of toks: ", len(just_toks))
-        ptokens = ptokens + just_toks
-        ptokens = filter(lambda x: len(x) > 0, ptokens)
-        print("train toks: ", len(ptokens))
-        for tok in ptokens:
-            name, context = tok.split("---", 1)
-            context_array = nltk.word_tokenize(context.strip())
-            name_parts = nltk.word_tokenize(name.strip())
-            try:
-                index = context_array.index(name_parts[0])
-            except Exception:
-                index = 0
-            span = len(name_parts) - 1
-            featuresets.append((self.taxon_features(name, context_array,
-                                index,span), 'taxon'))
-            if(len(name_parts[0]) > 1 and name_parts[0][1] != "."):
-                abb_name = name_parts[0][0]+". " + " ".join(name_parts[1:])
-                featuresets.append((self.taxon_features(abb_name,
-                                    context_array, index,span), 'taxon'))
-        print("# pos features.. ", len(featuresets))
-        #negative data
         ndata = open(os.path.dirname(os.path.realpath(__file__)) + "/" +
-                     self.negative_training_file).read()
+                     self._negative_training_file).read()
         ntokens = nltk.word_tokenize(ndata)
         neg_trigrams = nltk.trigrams(ntokens)
         print("trigrams: ", len(neg_trigrams))
@@ -155,6 +117,51 @@ class NetiNetiTrainer:
         print("bg tg negative features: ", bgc + tgc)
         print("total examples: ", len(featuresets))
         return(featuresets)
+
+    def _get_positive_training_data(self):
+        """Returns list of data for positive training"""
+        data = []
+        for line in open(self._positive_training_file):
+            if line.strip(): name, context = line.split("---", 1)
+            data.append({ 'name' : name.strip(), 'context' : context.strip() })
+        for sci_name in self._sci_names:
+            if sci_name: data.append({ 'name' : sci_name, 'context' : sci_name })
+        return data
+
+    def _get_positive_featuresets(self, positive_training_data):
+        featuresets = []
+        for data in positive_training_data:
+            name = data['name']
+            context = data['context']
+            context_tokens = nltk.word_tokenize(context)
+            name_tokens = nltk.word_tokenize(name)
+            try:
+                index = context_tokens.index(name_tokens[0])
+            except ValueError:
+                index = 0 #TODO should index be 0 or it should be -1 or something?
+            span = len(name_tokens) - 1
+
+            features = self.taxon_features(name, context_tokens, index, span)
+            featuresets.append((features, 'taxon'))
+
+            # make features for abbreviated genus like 'A. bus'
+            if(len(name_tokens[0]) > 1 and name_tokens[0][1] != "."):
+                abbr_name = name_tokens[0][0]+". " + " ".join(name_tokens[1:])
+                features = self.taxon_features(abbr_name, context_tokens, index,span)
+                featuresets.append((features, 'taxon'))
+        #print("# pos features.. ", len(featuresets))
+        return featuresets
+
+    def _file_lines(self, filename):
+        # TODO remove method from the class
+        """Return a list of the lines of the input file.
+
+        Arguments:
+        filename -- the file to read
+        """
+        lines = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + filename).readlines()
+        lines = [ line.strip() for line in lines ]
+        return(lines)
 
     def _populateFeatures(self, array, idx, start, stop, features, name):
         # TODO change method to _populate_features
