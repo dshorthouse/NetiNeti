@@ -60,3 +60,10 @@ def striptok(t):
 
     """
     return(right_strip(left_strip(t)[0])[0])
+
+def get_slice(array, slice):
+    try:
+        return eval("array%s" % slice)
+    except IndexError:
+        return "Null"
+

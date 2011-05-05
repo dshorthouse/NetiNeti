@@ -2,7 +2,7 @@ import nltk
 import random
 import re
 import os
-from neti_neti_helper import striptok
+from neti_neti_helper import striptok, get_slice
 
 class NetiNetiTrainer:
     """A class that defines the training algorithm and the training files
@@ -202,16 +202,18 @@ class NetiNetiTrainer:
         #prts = [striptok(pt) for pt in prts]
         #if(lc =="."):
         #       prts[0] = prts[0]+"."
-        self._populateFeatures(prts, 0, -3, "end", features, "last3_first")
-        self._populateFeatures(prts, 1, -3, "end", features, "last3_second")
+        #self._populateFeatures(prts, 0, -3, "end", features, "last3_first")
+        features['last3_first'] = get_slice(prts, "[0][-3:]")
+        #self._populateFeatures(prts, 1, -3, "end", features, "last3_second")
+        features['last3_second'] = get_slice(prts, "[1][-3:]")
         self._populateFeatures(prts, 2, -3, "end", features, "last3_third")
         self._populateFeatures(prts, 0, -2, "end", features, "last2_first")
         self._populateFeatures(prts, 1, -2, "end", features, "last2_second")
         self._populateFeatures(prts, 2, -2, "end", features, "last2_third")
-        self._populateFeatures(prts, 0, 0, "sc", features, "first_char")
-        self._populateFeatures(prts, 0, -1, "sc", features, "last_char")
-        self._populateFeatures(prts, 0, 1, "sc", features, "second_char")
-        self._populateFeatures(prts, 0, -2, "sc", features, "sec_last_char")
+        self._populateFeatures(prts, 0, 0, "sc", features,   "first_char")
+        self._populateFeatures(prts, 0, -1, "sc", features,  "last_char")
+        self._populateFeatures(prts, 0, 1, "sc", features,   "second_char")
+        self._populateFeatures(prts, 0, -2, "sc", features,  "sec_last_char")
         features["lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts, 0,
             -1, "sc", features, "lastltr_of_fw_in_sv") in sv
         string_weight = self._incWeight(string_weight, swt, j)
