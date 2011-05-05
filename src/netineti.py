@@ -10,362 +10,11 @@ Copyright (c) 2010, Marine Biological Laboratory. All rights resersved.
 
 """
 import time
-import nltk
-import random
-import re
 import os
-
-class NetiNetiTrainer:
-    """A class that defines the training algorithm and the training files
-    and actually trains a natrual language toolkit object (nltk)
-    """
-    def __init__(self, positive_training_file = "data/New_sp_contexts.txt",
-                 negative_training_file = "data/pictorialgeo.txt",
-                 sci_names_file = "data/millionnames.txt", learning_algorithm="NB",
-                 sci_names_training_num = 10000, negative_trigrams_num = 5000, context_span=1):
-        # TODO Too many arguments, perhaps create a TrainingFiles Class?
-        """Builds and trains the NetiNeti model
-
-        Keyword arguments:
-        positive_training_file -- text with scientific names and a text that contains them (default "data/New_sp_contexts.txt")
-        negative_training_file -- text without scientific names (default "data/pictorialgeo.txt")
-        sci_names_file -- text containing only scientific names -- one name per line (default "data/millionnames.txt")
-        learning_algorithm -- the algorithm to train with (default "Naive Bayesian: NB")
-        sci_names_training_num -- number of scientific names from sci_names_file to use for training (default 10000)
-        negative_trigrams_num -- number of negative trigrams to build for training (default 5000)
-        context_span -- number of surrounding words from either side to use for context training (default 1)
-
-        """
-        self._text_cleaner = TextClean()
-        self._positive_training_file = positive_training_file
-        self._negative_training_file = negative_training_file
-        self._sci_names_training_num = sci_names_training_num
-        self._negative_trigrams_num = negative_trigrams_num
-        self._context_span = context_span
-        self._sci_names_file = sci_names_file
-        self.learning_algorithm = learning_algorithm
-
-        self._sci_names, self._token_dict = self._tokenize_sci_names()
-        self._buildFeatures(self._getTrainingData())
-
-    def _tokenize_sci_names(self):
-        # TODO remove print statements
-        """Returns a list of random scientific names and a dictionary of
-        one-word tokens generated from the scientific names.
-
-        Scientific names are supplied in an external file which has
-        several million names. This collection of tokens is stored as a
-        dictionary to ensure uniqueness of all tokens and make
-        fast access to them. Tokens stored as keys of the dictionary,
-        values are irrelevant and are set to 1.
-        """
-        all_sci_names = self._file_lines(self._sci_names_file)
-        random.shuffle(all_sci_names)
-        sci_names = all_sci_names[:self._sci_names_training_num]
-        token_dict = {}
-        for sci_name in all_sci_names:
-            words = sci_name.split(" ") #TODO change to split() to avoid empty token. Then figure out how to eliminate empty token from other places
-            for word in words:
-                token_dict[word.lower()] = 1
-        print(len(token_dict))
-        return (sci_names, token_dict)
-
-    def _getTrainingData(self):
-        # TODO rename _getTrainingData to _get_training_data
-        """Builds and returns the feature sets for the algorithm"""
-
-        positive_training_data = self._get_positive_training_data()
-        featuresets = self._get_positive_featuresets(positive_training_data)
-        featuresets += self._get_negative_featuresets()
-        return featuresets
-
-    def _get_negative_featuresets(self):
-        # TODO Rename the variables: p, q, r, tg, bg
-        featuresets = []
-        ndata = open(os.path.dirname(os.path.realpath(__file__)) + "/" +
-                     self._negative_training_file).read()
-        ntokens = nltk.word_tokenize(ndata)
-        neg_trigrams = nltk.trigrams(ntokens)
-        print("trigrams: ", len(neg_trigrams))
-        inx = -1
-        bgc = 0
-        tgc = 0
-        print("Building neg features")
-        for p, q, r in neg_trigrams:
-            if(tgc > self._negative_trigrams_num):
-                break
-            inx += 1
-            tg = p + " " + q + " " + r
-            bg = p + " " + q
-            if(p[0].isupper() and p[1:].islower() and q.islower()):
-                bgc += 1
-                featuresets.append((self.taxon_features(bg, ntokens, inx, 1),
-                                    'not-a-taxon'))
-                featuresets.append((self.taxon_features(p, ntokens, inx, 0),
-                                    'not-a-taxon'))
-                if(r.islower()):
-                    tgc += 1
-                    featuresets.append((self.taxon_features(tg, ntokens,
-                                        inx, 2), 'not-a-taxon'))
-            if(q[0].isupper() and q[1:].islower()):
-                featuresets.append((self.taxon_features(q, ntokens, inx + 1,
-                                    0), 'not-a-taxon'))
-            if(r[0].isupper() and r[1:].islower()):
-                featuresets.append((self.taxon_features(r, ntokens, inx + 2,
-                                    0), 'not-a-taxon'))
-        random.shuffle(featuresets)
-        print("bg tg negative features: ", bgc + tgc)
-        print("total examples: ", len(featuresets))
-        return(featuresets)
-
-    def _get_positive_training_data(self):
-        """Returns list of data for positive training"""
-        data = []
-        for line in open(self._positive_training_file):
-            if line.strip(): name, context = line.split("---", 1)
-            data.append({ 'name' : name.strip(), 'context' : context.strip() })
-        for sci_name in self._sci_names:
-            if sci_name: data.append({ 'name' : sci_name, 'context' : sci_name })
-        return data
-
-    def _get_positive_featuresets(self, positive_training_data):
-        featuresets = []
-        for data in positive_training_data:
-            name = data['name']
-            context = data['context']
-            context_tokens = nltk.word_tokenize(context)
-            name_tokens = nltk.word_tokenize(name)
-            try:
-                index = context_tokens.index(name_tokens[0])
-            except ValueError:
-                index = 0 #TODO should index be 0 or it should be -1 or something?
-            span = len(name_tokens) - 1
-
-            features = self.taxon_features(name, context_tokens, index, span)
-            featuresets.append((features, 'taxon'))
-
-            # make features for abbreviated genus like 'A. bus'
-            if(len(name_tokens[0]) > 1 and name_tokens[0][1] != "."):
-                abbr_name = name_tokens[0][0]+". " + " ".join(name_tokens[1:])
-                features = self.taxon_features(abbr_name, context_tokens, index,span)
-                featuresets.append((features, 'taxon'))
-        #print("# pos features.. ", len(featuresets))
-        return featuresets
-
-    def _file_lines(self, filename):
-        # TODO remove method from the class
-        """Return a list of the lines of the input file.
-
-        Arguments:
-        filename -- the file to read
-        """
-        lines = open(os.path.dirname(os.path.realpath(__file__)) + "/"  + filename).readlines()
-        lines = [ line.strip() for line in lines ]
-        return(lines)
-
-    def _populateFeatures(self, array, idx, start, stop, features, name):
-        # TODO change method to _populate_features
-        # TODO catch a less general Exception
-        # TODO could remove method from the class
-        """Return a dictionary of features
-
-        Arguments:
-        array --
-        idx -- index
-        start --
-        stop --
-        features --
-        name --
-        """
-        try:
-            if(stop == "end"):
-                features[name] = array[idx][start:]
-            elif(stop == "sc"):
-                features[name] = array[idx][start]
-            else:
-                features[name] = array[idx][start:stop]
-        except Exception:
-            features[name] = 'Null'
-        return(features[name])
-
-    def _incWeight(self, st_wt, inc, val):
-        # TODO change name to _inc_weight
-        # TODO change argument names to something useful
-        # TODO could remove method from the class
-        """O_o
-
-        Arguments:
-        st_wt -- starting weight?
-        inc -- the amount to increase the starting weight?
-        val -- maybe a boolean?
-        """
-        if(val):
-            return(st_wt + inc)
-        else:
-            return(st_wt)
-
-    def taxon_features(self, token, context_array, index, span):
-        # TODO it's long. Perhaps split into several functions?
-        # TODO change variable names, at least sv and c and probably others
-        # TODO catch a less generic exception
-        """Returns a dictionary of features"""
-        token = token.strip()
-        context_span = self._context_span
-        features = {}
-        swt = 5 # Weight Increment
-        vowels = ['a', 'e', 'i', 'o', 'u']
-        sv = ['a', 'i', 's', 'm']#last letter (LL) weight
-        sv1 = ['e', 'o']# Reduced LL weight
-        svlb = ['i', 'u']# penultimate L weight
-        string_weight = 0
-        prts = token.split(" ")
-        #lc = self._populateFeatures(prts,0,-1,"sc",features,"last_char")
-        #prts = [self._text_cleaner.striptok(pt) for pt in prts]
-        #if(lc =="."):
-        #       prts[0] = prts[0]+"."
-        self._populateFeatures(prts, 0, -3, "end", features, "last3_first")
-        self._populateFeatures(prts, 1, -3, "end", features, "last3_second")
-        self._populateFeatures(prts, 2, -3, "end", features, "last3_third")
-        self._populateFeatures(prts, 0, -2, "end", features, "last2_first")
-        self._populateFeatures(prts, 1, -2, "end", features, "last2_second")
-        self._populateFeatures(prts, 2, -2, "end", features, "last2_third")
-        self._populateFeatures(prts, 0, 0, "sc", features, "first_char")
-        self._populateFeatures(prts, 0, -1, "sc", features, "last_char")
-        self._populateFeatures(prts, 0, 1, "sc", features, "second_char")
-        self._populateFeatures(prts, 0, -2, "sc", features, "sec_last_char")
-        features["lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts, 0,
-            -1, "sc", features, "lastltr_of_fw_in_sv") in sv
-        string_weight = self._incWeight(string_weight, swt, j)
-        features["lastltr_of_fw_in_svl"] = j = self._populateFeatures(prts, 0,
-            -1, "sc", features, "lastltr_of_fw_in_svl") in sv1
-        string_weight = self._incWeight(string_weight, swt - 3, j)
-        features["lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts, 1,
-            -1, "sc", features, "lastltr_of_sw_in_sv") in sv
-        string_weight = self._incWeight(string_weight, swt, j)
-        features["lastltr_of_sw_in_svl"] = j = self._populateFeatures(prts, 1,
-            -1, "sc", features, "lastltr_of_sw_in_svl") in sv1
-        string_weight = self._incWeight(string_weight, swt - 3, j)
-        features["lastltr_of_tw_in_sv_or_svl"] = j = self._populateFeatures(
-        prts, 2, -1, "sc", features, "lastltr_of_tw_in_sv_or_svl") in sv + sv1
-        string_weight = self._incWeight(string_weight, swt - 2, j)
-        features["2lastltr_of_tw_in_sv_or_svl"] = self._populateFeatures(prts,
-            2, -2, "sc", features, "2lastltr_of_tw_in_sv_or_svl") in sv + sv1
-        features["last_letter_fw_vwl"] = prts[0][-1] in vowels
-        features["2lastltr_of_fw_in_sv"] = j = self._populateFeatures(prts,
-            0, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_fw_in_sv1"] = j = self._populateFeatures(prts,
-            0, -2, "sc", features, "2lastltr_of_fw_in_sv1") in sv1
-        features["2lastltr_of_fw_in_svlb"] = j = self._populateFeatures(prts,
-            0, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["2lastltr_of_sw_in_sv"] = j = self._populateFeatures(prts,
-            1, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_sw_in_sv1"] = j = self._populateFeatures(prts,
-            1, -2, "sc", features, "2lastltr_of_sw_in_sv1") in sv1
-        features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(prts,
-            1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["first_in_table"] = self._token_dict.has_key(
-            self._populateFeatures(prts, 0, 0, "end", features,
-                                   "first_in_table").lower())
-        features["second_in_table"] = self._token_dict.has_key(
-            self._populateFeatures(prts, 1, 0, "end", features,
-                                   "second_in_table").lower())
-        features["third_in_table"] = self._token_dict.has_key(
-            self._populateFeatures(prts, 2, 0, "end", features,
-                                   "third_in_table").lower())
-        #context_R = []
-        #context_L = []
-        for c in range(context_span):
-            item = self._text_cleaner.striptok(self._populateFeatures(
-                context_array, index + span + c + 1, 0, "end", features,
-                str(c + 1) + "_context"))
-            #features[str(c+1)+"_context"] = self._populateFeatures(
-            #    context_array,index+span+c+1,0,"end",
-            #    features,str(c+1)+"_context").strip()
-            features[str(c + 1) + "_context"] = item
-            if(index + c - context_span < 0):
-                features[str(c - context_span) + "_context"] = 'Null'
-            else:
-                item1 = self._text_cleaner.striptok(self._populateFeatures(
-                    context_array, index + c - context_span, 0, "end",
-                    features, str(c - context_span) + "_context"))
-#               features[str(c-context_span)+"_context"] =
-#                   self._populateFeatures(context_array,index+c-context_span,
-#                   0,"end",features,str(c-context_span)+"_context").strip()
-                features[str(c - context_span) + "_context"] = item1
-#                R = features[str(1)+"_context"]
-#                L = features[str(-1)+"_context"]
-#                if( L =="Null"):
-#                        features["pos_tag"+str(-1)+"_context"] = "UKNWN"
-#                else:
-#                        features["pos_tag"+str(-1)+"_context"] =
-#                       nltk.pos_tag([features[str(-1)+"_context"]])[0][1]
-#
-#                if( R =="Null"):
-#                        features["pos_tag"+str(1)+"_context"] = "UKNWN"
-#                else:
-#                        features["pos_tag"+str(1)+"_context"] =
-#                       nltk.pos_tag([features[str(1)+"_context"]])[0][1]
-#       features["pos_tag"+str(1)+"_context"] =
-#           nltk.pos_tag([features[str(1)+"_context"]])[0][1]
-#       features["pos_tag"+str(-1)+"_context"] =
-#           nltk.pos_tag([features[str(-1)+"_context"]])[0][1]
-        try:
-            features["1up_2_dot_restok"] = (token[0].isupper() and
-                                            token[1] is "." and
-                                            token[2] is " " and
-                                            token[3:].islower())
-        except Exception:
-            features["1up_2_dot_restok"] = False
-        features["token"] = token
-        for vowel in'aeiou':
-            features["count(%s)" % vowel] = token.lower().count(vowel)
-            features["has(%s)" % vowel] = vowel in token
-        imp = token[0].isupper() and token[1:].islower()
-        if(string_weight > 18):
-            features["Str_Wgt"] = 'A'
-        elif(string_weight >14):
-            features["Str_Wgt"] = 'B'
-        elif(string_weight > 9):
-            features["Str_Wgt"] = 'C'
-        elif(string_weight > 4):
-            features["Str_Wgt"] = 'D'
-        else:
-            features["Str_Wgt"] = 'F'
-        features["imp_feature"] = imp
-        return features
-
-    def _buildFeatures(self, featuresets):
-        # TODO change name to _build_features
-        # TODO change at least NB and MaxEnt variables, probably others
-        # TODO nltk doesn't have MaxentClassifier, probably MaxEntClassifier
-        # TODO define self._model in the __init__ method
-        # TODO remove print statements
-        """This changes the algorithm that nltk uses to train the model.
-
-        Arguments:
-        featuresets --
-
-        """
-        if(self.learning_algorithm == "NB"):
-            #WNB = nltk.classify.weka.WekaClassifier.train("Naive_Bayes_weka",
-            #featuresets,"naivebayes")
-            NB = nltk.NaiveBayesClassifier.train(featuresets)
-            self._model = NB
-        elif(self.learning_algorithm == "MaxEnt"):
-            print("MaxEnt")
-            MaxEnt = nltk.MaxentClassifier.train(featuresets, "MEGAM",
-                                                 max_iter=15)
-            #DT = nltk.DecisionTreeClassifier.train(featuresets)
-            self._model = MaxEnt
-        elif(self.learning_algorithm == "DecisionTree"):
-            print("Decision Tree is learning")
-            DTree = nltk.DecisionTreeClassifier.train(featuresets, 0.05)
-            self._model = DTree
-
-    def getModel(self):
-        # TODO change name to get_model
-        """An accessor method for the model."""
-        return self._model
+import nltk
+from neti_neti_trainer import NetiNetiTrainer
+from neti_neti_helper import *
+import re
 
 class NameFinder():
     """The meat of NetiNeti. This class uses the trained NetiNetiTrain model
@@ -394,7 +43,6 @@ class NameFinder():
             reml[a] = 1
         self._remlist = reml
         self._modelObject = modelObject
-        self._text_cleaner = TextClean()
         #psyco.bind(self.findNames)
         #psyco.bind(self.find_names)
 
@@ -496,7 +144,7 @@ class NameFinder():
         span -- describe argument
 
         """
-        return((self._modelObject.getModel().classify(
+        return((self._modelObject.get_model().classify(
             self._modelObject.taxon_features(tkn, context, index, span)) ==
             'taxon'))
 
@@ -600,17 +248,17 @@ class NameFinder():
         ra, rb = a1, b1
         if((len(a1) > 1)):
             if(a1[-1] == "."):
-                ra = self._text_cleaner.leftStrip(a1)[0]
+                ra = left_strip(a1)[0]
             else:
-                ra = self._text_cleaner.striptok(a1)
+                ra = striptok(a1)
         if(len(b1) > 1):
             if(b1[0] + b1[-1] == "()"):
                 pass
             elif(b1[-1] == "-"):
-                rb = self._text_cleaner.leftStrip(b1)[0]
+                rb = left_strip(b1)[0]
             else:
-                rb = self._text_cleaner.striptok(b1)
-        return(ra, rb, self._text_cleaner.striptok(c))
+                rb = striptok(b1)
+        return(ra, rb, striptok(c))
 
     def _createIndex(self, token):
         # TODO rename method to _create_index or similar
@@ -809,16 +457,16 @@ class NameFinder():
             if(pts[0][0] + pts[0][-1] == "()"):
                 #print nme+"...."
                 no1 = o[0]
-                no2 = o[1] + self._text_cleaner.rightStrip(nme)[1]
+                no2 = o[1] + right_strip(nme)[1]
             else:
                 #print nme
                 #print "o1 ",o[0]
                 #print "o2 ",o[1]
-                #print "left strip...", self._text_cleaner.leftStrip(nme)[1]
-                #print "right strip...",self._text_cleaner.rightStrip(nme)[1]
+                #print "left strip...", left_strip(nme)[1]
+                #print "right strip...",right_strip(nme)[1]
                 #print "................."
-                no1 = o[0] + self._text_cleaner.leftStrip(nme)[1]
-                no2 = o[1] + self._text_cleaner.rightStrip(nme)[1]
+                no1 = o[0] + left_strip(nme)[1]
+                no2 = o[1] + right_strip(nme)[1]
             tj = self._text[no1:no2]
             nnewn.append(tj)
             nnofl.append((no1, no2))
@@ -856,74 +504,6 @@ class NameFinder():
         return(etext)
 
 
-class TextClean():
-    # TODO create an __init__ method
-    """This appears to be a class dedicated to cleaning text. There is much
-    work to do.
-
-    """
-
-    def leftStrip(self, t):
-        # TODO rename method
-        # TODO rename variables
-        """This takes a token and strips non alpha characters off the left. It
-        returns the stripped string and the number of characters it stripped.
-
-        Arguments:
-        t -- a one word token which might have trailing non alpha characters
-
-        """
-        i = 0
-        while(i < len(t)):
-            if(not t[i].isalpha()):
-                i = i + 1
-            else:
-                break
-        if(i == len(t)):
-            return('', 0)
-        return(t[i:], i)
-
-    # This strips non alpha characters from the right of a string
-    # and returns the new string and the number of characters stripped negated
-    def rightStrip(self, t):
-        # TODO rename method
-        # TODO rename variables
-        """This takes a token and strips non alpha characters off the right. It
-        returns the stripped string and the number of characters it stripped.
-
-        amount of stripped characters allows to calculate locations of found
-        scientific names within the original document
-
-        Arguments:
-        t -- a one word token
-
-        """
-        j = -1
-        while(j >= -len(t)):
-            if(not t[j].isalpha()):
-                j = j - 1
-            else:
-                break
-        if(j == -1):
-            return(t, 0)
-        elif(j == -(len(t) + 1)):
-            return('', 0)
-        else:
-            return(t[:j + 1], j + 1)
-
-    def striptok(self, t):
-
-        # TODO rename method
-        # TODO rename variables
-        """This combines leftStrip and rightStrip into one method.
-        Returns back token without trailing non alpha characters
-
-        Arguments:
-        t -- a one word token which might contain trailing non alpha characters
-             like parentheses, comma, etc...
-
-        """
-        return(self.rightStrip(self.leftStrip(t)[0])[0])
 
 
 #psyco.bind(NameFinder)

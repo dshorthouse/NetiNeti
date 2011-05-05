@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from netineti import NetiNetiTrainer
+from neti_neti_trainer import NetiNetiTrainer
 from netineti import NameFinder
 import subprocess
 import shlex
