@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from netineti import NetiNetiTrainer
+from neti_neti_trainer import NetiNetiTrainer
 from netineti import NameFinder
 import subprocess
 import shlex
@@ -28,7 +28,7 @@ def standard_deviation(population):
 
 population = []
 
-for i in range(1, 3):
+for i in range(1, 6):
     print "going through %s cycle" % i
     neti_neti = NetiNetiTrainer()
     name_finder = NameFinder(neti_neti)

@@ -3,3 +3,4 @@
 *.bak
 virtualenv
 test_result_after*
+tags
