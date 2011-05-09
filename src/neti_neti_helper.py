@@ -61,9 +61,14 @@ def striptok(t):
     """
     return(right_strip(left_strip(t)[0])[0])
 
-def get_slice(array, slice):
+def get_words_slice(words, word_index, first_char_index, second_char_index = None):
+    result = 'Null'
     try:
-        return eval("array%s" % slice)
+        if (second_char_index == None):
+            result = words[word_index][first_char_index]
+        else:
+            result = words[word_index][first_char_index:second_char_index]
     except IndexError:
-        return "Null"
-
+        pass
+    if result == []: result = 'Null'
+    return result
