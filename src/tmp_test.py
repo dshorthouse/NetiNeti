@@ -4,6 +4,15 @@ from netineti import NameFinder
 import subprocess
 import shlex
 import math
+import sys
+
+num_cycles = 6
+
+if len(sys.argv) > 1:
+    try:
+        num_cycles =  int(sys.argv[1]) + 1
+    except ValueError:
+        pass
 
 def variance(population):
     n = 0
@@ -28,8 +37,8 @@ def standard_deviation(population):
 
 population = []
 
-for i in range(1, 6):
-    print "going through %s cycle" % i
+for i in range(1, num_cycles):
+    print "going through the cycle %s" % i
     neti_neti = NetiNetiTrainer()
     name_finder = NameFinder(neti_neti)
 
@@ -65,5 +74,5 @@ dev = standard_deviation(population)
 sum = 0
 for i in population:
     sum = sum + i
-
-print "Mean: %s, St. dev: %s" % (float(sum)/float(len(population)), dev)
+set = ','.join([str(p) for p in population])
+print "Mean: %s, St. dev: %s, set: %s" % (float(sum)/float(len(population)), dev, set)
