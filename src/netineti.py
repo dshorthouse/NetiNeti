@@ -24,46 +24,67 @@ class NameFinder():
 
     """
 
-    def __init__(self, modelObject, e_list='data/new-list.txt'):
-        # TODO change the name of modelObject to model_object
+    def __init__(self, model_object, black_list_file='data/new-list.txt'):
         # TODO change the variables e_list, a and reml to something useful
         """Create the name finder object.
 
         Arguments:
-        modelObject -- maybe the trained NetiNetiTrain object?
+        model_object -- maybe the trained NetiNetiTrain object?
 
         Keyword Arguments:
         e_list -- describe argument (default "data/new-list.txt")
 
         """
-        reml = {}
-        elist = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
-                     e_list).read().split("\n")
-        for a in elist:
-            reml[a] = 1
-        self._remlist = reml
-        self._modelObject = modelObject
-        #psyco.bind(self.findNames)
-        #psyco.bind(self.find_names)
+        self._black_dict = {}
+        f = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
+                     black_list_file)
+        for line in f:
+            self._black_dict[line.rstrip()] = 1
+        self._model_object = model_object
 
-    def _remDot(self, a):
-        # TODO change the name to _remove_dot (or something similar)
-        # TODO change the variable 'a' to something useful
-        # TODO could remove method from the class
-        """Return the string with no dot at the end of it.
-
-        removes period from words that are not an obvious genus abbreviaion
-        sometimes people abbreviate genus to 2 or 3 letters, would it be a problem?
-        we assume here that abbr is almost alwqys 1 letter
+    def find_names(self, text, resolve_dot=False):
+        # TODO fix variable names
+        # TODO perhaps break this up into smaller functions
+        """Return a string of names concatenated with a newline and a list of
+        offsets for each mention of the name in the original text.
 
         Arguments:
-        a -- token, usually the first element of a trigram
+        text -- input text
 
+        Keyword Arguments:
+        resolvedot -- boolean to resolve full name of a genus (false by default) and not
+                      recommended for use
         """
-        if(len(a) > 2 and a[-1] == '.'):
-            return(a[:-1])
+        self._text = text
+        # TODO: see if a saner split will still work
+        prog = re.compile('\s')
+        tokens = prog.split(text)
+        #tokens = [line for token in tokens for line in token.split("\\\\\\\\n")]
+
+        names, newnames, offsets = self.findNames(tokens)
+        name_set = set(names)
+        name_list = list(name_set)
+        resolved_names = []
+        name_dict = {}
+        prog = re.compile('^(.{1})([^ ]+)(.*)$')
+        if(resolve_dot):
+            abbr_names = [a for a in name_list if(a[1] == "." and a[2] == " ")]
+            diff = name_set.difference(set(abbr_names))
+            diff_list = list(diff)
+            for name in diff_list:
+                result = prog.match(name).groups()
+                name_dict[result[0] + "." + result[2]] = result[1]
+            for name in abbr_names:
+                if(name_dict.has_key(name)):
+                    resolved_names.append(name[0] + "[" + name_dict[name] + "]" + " " + name[3:])
+                else:
+                    resolved_names.append(name)
+            resolved_names += diff_list
+            resolved_names.sort()
         else:
-            return (a)
+            name_list.sort()
+            resolved_names = name_list
+        return "\n".join(resolved_names), newnames, offsets
 
     def _hCheck(self, a):
         # TODO change name to something useful, not _h_check
@@ -75,10 +96,10 @@ class NameFinder():
         a -- a token, first element of a trigram
 
         """
-        a = self._remDot(a)
+        a = remove_dot(a)
         e1 = a.split("-")
-        j = [self._remlist.has_key(w) for w in e1]
-        return(not True in j and not self._remlist.has_key(a.lower()))
+        j = [self._black_dict.has_key(w) for w in e1]
+        return(not True in j and not self._black_dict.has_key(a.lower()))
 
     def _isGood2(self, a, b):
         # TODO change name to something useful, not _is_good_2
@@ -94,10 +115,10 @@ class NameFinder():
         if(len(a) > 1 and len(b) > 1):
             td = (a[1] == '.' and len(a) ==2)
             s1 = a[0].isupper() and b.islower() and ((a[1:].islower() and
-                a.isalpha()) or td) and (self._remDot(b).isalpha() or '-' in b)
+                a.isalpha()) or td) and (remove_dot(b).isalpha() or '-' in b)
             return(s1 and self._hCheck(a) and self._hCheck(b))
         else:
-            return(False)
+            return False
 
     def _isGood3(self, a, b, c):
         # TODO change name to something useful, not _is_good_3
@@ -113,7 +134,7 @@ class NameFinder():
 
         """
         if(len(a) > 1 and len(b) > 1 and len(c) > 1):
-            s1 = c.islower() and self._remDot(c).isalpha()
+            s1 = c.islower() and remove_dot(c).isalpha()
             b_par_exp = b[0] + b[-1] == "()"
             if(b_par_exp):
                 s2 = b[1].isupper() and ((b[2] == "." and len(b) == 4) or
@@ -144,8 +165,8 @@ class NameFinder():
         span -- describe argument
 
         """
-        return((self._modelObject.get_model().classify(
-            self._modelObject.taxon_features(tkn, context, index, span)) ==
+        return((self._model_object.get_model().classify(
+            self._model_object.taxon_features(tkn, context, index, span)) ==
             'taxon'))
 
     def _resolve(self, a, b, c, nhash, nms, last_genus, plg):
@@ -164,123 +185,27 @@ class NameFinder():
         plg -- describe argument
 
         """
-        #gr =self._remDot((a+" "+b+" "+c).strip())
+        #gr =remove_dot((a+" "+b+" "+c).strip())
         if(b == ""):
-            gr = self._remDot((a + " " + c).strip())
+            gr = remove_dot((a + " " + c).strip())
         else:
-            gr = self._remDot((a + " " + b + " " + c).strip())
+            gr = remove_dot((a + " " + b + " " + c).strip())
         if(gr[1] == "." and gr[2] == " "):
             if(nhash.has_key(gr)):
-                nms.append(self._remDot((a[0] + "[" + nhash[gr] + "]" + " " +
+                nms.append(remove_dot((a[0] + "[" + nhash[gr] + "]" + " " +
                                         b + " " + c).strip()))
             elif(last_genus and a[0] == last_genus[0]):
-                nms.append(self._remDot((a[0] + "[" + last_genus[1:] + "]" +
+                nms.append(remove_dot((a[0] + "[" + last_genus[1:] + "]" +
                                         " " + b + " " + c).strip()))
             elif(plg and a[0] == plg):
-                nms.append(self._remDot((a[0] + "[" + plg[1:] + "]" + " " +
+                nms.append(remove_dot((a[0] + "[" + plg[1:] + "]" + " " +
                                         b + " " + c).strip()))
             else:
                 nms.append(gr)
         else:
             nms.append(gr)
-            nhash[self._remDot((a[0] + ". " + b + " " + c).strip())] = a[1:]
+            nhash[remove_dot((a[0] + ". " + b + " " + c).strip())] = a[1:]
 
-    def find_names(self, text, resolvedot=False):
-        # TODO fix variable names
-        # TODO perhaps break this up into smaller functions
-        """Return a string of names concatenated with a newline and a list of
-        offsets for each mention of the name in the original text.
-
-        Arguments:
-        text -- input text
-
-        Keyword Arguments:
-        resolvedot -- boolean to resolve full name of a genus (false by default) and not
-                      recommended for use
-        """
-        self._text = text
-        #tok = nltk.word_tokenize(text)
-        #tok = nltk.sexpr_tokenize(text)
-        #text = re.sub('\n|\{|\}|,|"'," ",text)
-        tok = text.split(" ")
-        #tok = [b for a in tok for b in a.split("\t")]
-        tok = [b for a in tok for b in a.split("\n")]
-        names, newnames, offsets = self.findNames(tok)
-        sn = set(names)
-        lnames = list(sn)
-        rnames = []
-        nh = {}
-        if(resolvedot):
-            abrn = [a for a in lnames if(a[1] == "." and a[2] == " ")]
-            diff = sn.difference(set(abrn))
-            ld = list(diff)
-            for i in ld:
-                prts = i.split(" ")
-                st = " ".join(prts[1:])
-                nh[i[0] + ". " + st] = prts[0][1:]
-            nl = []
-            for n in abrn:
-                if(nh.has_key(n)):
-                    nl.append(n[0] + "[" + nh[n] + "]" + " " + n[3:])
-                else:
-                    nl.append(n)
-            resolved_list = nl + ld
-            resolved_list.sort()
-            rnames = resolved_list
-        else:
-            lnames.sort()
-            rnames = lnames
-        return("\n".join(rnames), newnames, offsets)
-
-    def _cleanTok(self, a, b, c):
-        # TODO rename method to _clean_tokens or similar
-        # TODO rename variables (a, b, c, a1, b1, ra, rb)
-        """Cleans the tokens.
-        Intelligent strip of trigram parts
-
-        Arguments:
-        a -- first element of a trigram
-        b -- second element of a trigram
-        c -- third element of a trigram
-
-        """
-        a1, b1 = a.strip(), b.strip()
-        ra, rb = a1, b1
-        if((len(a1) > 1)):
-            if(a1[-1] == "."):
-                ra = left_strip(a1)[0]
-            else:
-                ra = striptok(a1)
-        if(len(b1) > 1):
-            if(b1[0] + b1[-1] == "()"):
-                pass
-            elif(b1[-1] == "-"):
-                rb = left_strip(b1)[0]
-            else:
-                rb = striptok(b1)
-        return(ra, rb, striptok(c))
-
-    def _createIndex(self, token):
-        # TODO rename method to _create_index or similar
-        # TODO there is lots of programming cleanup that can happen here
-        # TODO rename variables, specifically oh
-        # TODO could remove method from the class
-        """Returns a dictionary indexes for all tockens. Key is a token number in
-        the document, Value is the length of the token.
-
-        Arguments:
-        token -- list of all tokens from the document checked for scientific names
-
-        """
-        length = 0
-        oh = {}
-        for i in range(len(token)):
-            if(i == 0):
-                oh[i] = 0
-            else:
-                oh[i] = length
-            length = length + len(token[i]) + 1 #or delim length
-        return(oh)
 
     def _getOffsets(self, oh, index, a, b, c):
         # TODO rename method to _get_offsets
@@ -314,9 +239,9 @@ class NameFinder():
         tok -- the token to check as a ponential uninomial
         """
         if(len(tok) > 5 and tok[0].isupper() and tok[1:].islower() and
-            (self._remDot(tok).isalpha() or (tok[0].isupper() and
+            (remove_dot(tok).isalpha() or (tok[0].isupper() and
                                         tok[1] == "." and tok[2].islower() and
-                                        self._remDot(tok[2:]).isalpha())) and
+                                        remove_dot(tok[2:]).isalpha())) and
                                         self._hCheck(tok)):
             return(True)
         else:
@@ -335,7 +260,7 @@ class NameFinder():
         endings = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
                     'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
                     'opsida', 'phyceae', 'phycidae', 'phyta', 'phytin']
-        if(len(filter(lambda x: self._remDot(tok.lower()).endswith(x),
+        if(len(filter(lambda x: remove_dot(tok.lower()).endswith(x),
                                             endings)) > 0):
             return(True)
         else:
@@ -363,7 +288,7 @@ class NameFinder():
         prev_last_genus = ""
         nhash = {}
         ts = time.clock()
-        oh = self._createIndex(token)
+        oh = create_index(token)
         offset_list = []
         if(len(token) == 2):
             if(self._isGood2(token[0], token[1]) and self._taxonTest(token[0] +
@@ -384,12 +309,12 @@ class NameFinder():
             for a, b, c in tgr:
                 icount += 1
                 #print a,icount
-                p, q, r = self._cleanTok(a, b, c)
+                p, q, r = clean_token(a.strip(), b.strip(), c)
                 #p1,q1,r1 = a.strip(),b.strip(),c.strip()
                 #print "p q r = ", p,"--",q,"--",r
                 #print "p1,q1,r1 = ",p1,q1,r1
-                bg = self._remDot(p + " " + q)
-                tg = self._remDot(p + " " + q + " " + r)
+                bg = remove_dot(p + " " + q)
+                tg = remove_dot(p + " " + q + " " + r)
                 j = -1
                 count = 0
                 if(nms):
@@ -419,32 +344,32 @@ class NameFinder():
                         self._resolve(p, q, "", nhash, nms, last_genus,
                                       prev_last_genus)
                 elif(self._uninomialCheck(p)):
-                    if(self._taxonTest(re.sub("\.", ". ", self._remDot(p)),
+                    if(self._taxonTest(re.sub("\.", ". ", remove_dot(p)),
                                         token, icount, 0)):
                         start, end = self._getOffsets(oh, icount, a, "", "")
                         offset_list.append((start, end))
-                        nms.append(self._remDot(p))
+                        nms.append(remove_dot(p))
                     elif(self._endingCheck(p)):
                         start, end = self._getOffsets(oh, icount, a, "", "")
                         offset_list.append((start, end))
-                        nms.append(self._remDot(p))
+                        nms.append(remove_dot(p))
                 elif(self._endingCheck(p)):
                     if(self._hCheck(p) and p[0].isupper() and
-                        self._remDot(p).isalpha()):
+                        remove_dot(p).isalpha()):
                         start, end = self._getOffsets(oh, icount, a, "", "")
                         offset_list.append((start, end))
-                        nms.append(self._remDot(p))
+                        nms.append(remove_dot(p))
         try:
             if(self._isGood2(tgr[-1][-2], tgr[-1][-1])):
-                if(self._taxonTest(self._remDot(tgr[-1][-2] + " " +
+                if(self._taxonTest(remove_dot(tgr[-1][-2] + " " +
                     tgr[-1][-1]), token, icount + 1, 1)):
                     self._resolve(tgr[-1][-2], tgr[-1][-1], "", nhash, nms,
                     last_genus, prev_last_genus)
-                    #nms.append(self._remDot(tgr[-1][-2]+" "+tgr[-1][-1]))
+                    #nms.append(remove_dot(tgr[-1][-2]+" "+tgr[-1][-1]))
                 elif(self._uninomialCheck(tgr[-1][-2])):
                     if(self._taxonTest(re.sub("\.", " ",
-                        self._remDot(tgr[-1][-2])), token, icount + 1, 0)):
-                        nms.append(self._remDot(tgr[-1][-2]))
+                        remove_dot(tgr[-1][-2])), token, icount + 1, 0)):
+                        nms.append(remove_dot(tgr[-1][-2]))
         except Exception:
             print ""
         te = time.clock()
@@ -504,9 +429,5 @@ class NameFinder():
         return(etext)
 
 
-
-
-#psyco.bind(NameFinder)
-#psyco.bind(TextClean)
 if __name__ == '__main__':
     print "NETI..NETI\n"

@@ -140,18 +140,6 @@ class NetiNetiTrainer:
                 featuresets.append((features, 'taxon'))
         return featuresets
 
-    def _inc_weight(self, string_weight, increment, perform):
-        """
-        Arguments:
-        string_weight -- string weight
-        increment -- the amount to increase the string weight
-        perform -- boolean indicating if increase should happen
-        """
-        if(perform):
-            return string_weight + increment
-        else:
-            return string_weight
-
     def taxon_features(self, token, context_array, index, span):
         """Returns a dictionary of features"""
         token = token.strip()
@@ -177,20 +165,24 @@ class NetiNetiTrainer:
         features['char2_first_word']  = get_words_slice(words, 0, 1)
         features['char-2_first_word'] = get_words_slice(words, 0, -2)
 
-        features["char-1_first_word_in_lc"]   = j = features['char-1_first_word'] in last_chars
-        string_weight = self._inc_weight(string_weight, weight_increment, j)
-        features["char-1_first_word_in_lcr"]  = j = features['char-1_first_word'] in last_chars_reduced
-        string_weight = self._inc_weight(string_weight, weight_increment - 3, j)
+        features["char-1_first_word_in_lc"] = features['char-1_first_word'] in last_chars
+        if features["char-1_first_word_in_lc"]: string_weight += weight_increment
+
+        features["char-1_first_word_in_lcr"] = features['char-1_first_word'] in last_chars_reduced
+        if features["char-1_first_word_in_lcr"]: string_weight += weight_increment - 3
 
         char_last_second = get_words_slice(words, 1, -1)
-        features["char-1_second_word_in_lc"]  = j = char_last_second in last_chars
-        string_weight = self._inc_weight(string_weight, weight_increment, j)
-        features["char-1_second_word_in_lcr"] = j = char_last_second in last_chars_reduced
-        string_weight = self._inc_weight(string_weight, weight_increment - 3, j)
 
-        features["char-1_third_word_in_lca"]  = j = get_words_slice(words, 2, -1) in last_chars_all
-        string_weight = self._inc_weight(string_weight, weight_increment - 2, j)
-        features["char-2_third_word_in_lca"]  = get_words_slice(words, 2, -2) in last_chars_all
+        features["char-1_second_word_in_lc"] = char_last_second in last_chars
+        if features["char-1_second_word_in_lc"]: string_weight += weight_increment
+
+        features["char-1_second_word_in_lcr"] = char_last_second in last_chars_reduced
+        if features["char-1_second_word_in_lcr"]: string_weight += weight_increment - 3
+
+        features["char-1_third_word_in_lca"] = get_words_slice(words, 2, -1) in last_chars_all
+        if features["char-1_third_word_in_lca"]: string_weight += weight_increment - 2
+
+        features["char-2_third_word_in_lca"] = get_words_slice(words, 2, -2) in last_chars_all
 
         features["char-1_first_word_in_vwl"] = features['char-1_first_word'] in vowels
         features["char-2_first_word_in_lc"]  = features['char-2_first_word'] in last_chars
