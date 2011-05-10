@@ -6,7 +6,7 @@ import shlex
 import math
 import sys
 
-num_cycles = 6
+num_cycles = 3
 
 if len(sys.argv) > 1:
     try:
@@ -24,22 +24,23 @@ def variance(population):
         mean = mean + (delta / n)
         s = s + delta * (x - mean)
 
-    # if you want to calculate std deviation
-    # of a sample change this to "s / (n-1)"
     return s / (n-1)
 
 # calculate the standard deviation of a population
 # accepts: an array, the population
 # returns: the standard deviation
 def standard_deviation(population):
+    if len(population) == 1:
+        return 0
+    end
     return math.sqrt(variance(population))
 
 
 population = []
 
 for i in range(1, num_cycles):
-    print "going through the cycle %s" % i
     neti_neti = NetiNetiTrainer()
+    print "going through the cycle %s" % i
     name_finder = NameFinder(neti_neti)
 
     result = name_finder.find_names(open("data/test.txt").read())
@@ -52,7 +53,6 @@ for i in range(1, num_cycles):
     test_result_file.close()
 
     args = shlex.split('diff -d  data/test_result_before_refactoring.txt data/test_result_after_refactoring.txt')
-    #print args
     result = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
     result = result[0].split("\n")
     ins = []
@@ -64,9 +64,6 @@ for i in range(1, num_cycles):
             if i[0] == '<':
                 ins.append(i.strip())
         differences = ins + outs
-    #for i in differences:
-        #print i
-    #print "Found " + str(len(differences)) + " differences"
     population.append(len(differences))
 
 dev = standard_deviation(population)

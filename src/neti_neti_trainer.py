@@ -32,10 +32,11 @@ class NetiNetiTrainer:
         self._context_span = context_span
         self._sci_names_file = sci_names_file
         self.learning_algorithm = learning_algorithm
+        self._model = None # model is added during the training
 
         self._sci_names, self._white_list = self._tokenize_sci_names()
         featuresets = self._get_training_data()
-        self._train_classifier(featuresets)
+        self._train_classifier_model(featuresets)
 
     def _tokenize_sci_names(self):
         """Returns a list of random scientific names and a dictionary of
@@ -116,9 +117,7 @@ class NetiNetiTrainer:
         return data
 
     def _get_positive_featuresets(self, positive_training_data):
-        """
-
-        """
+        """ Creates features set from prepared positive training data """
         featuresets = []
         for data in positive_training_data:
             name = data['name']
@@ -141,264 +140,110 @@ class NetiNetiTrainer:
                 featuresets.append((features, 'taxon'))
         return featuresets
 
-    def _inc_weight(self, string_weight, increment, perform):
-        """
-        Arguments:
-        string_weight --
-        increment -- the amount to increase the string weight
-        perform -- boolean indicating if increase should happen
-        """
-        if(perform):
-            return string_weight + increment
-        else:
-            return string_weight
-
-    def _populateFeatures(self, array, idx, start, stop, features, name):
-        # TODO change method to _populate_features
-        # TODO catch a less general Exception
-        # TODO could remove method from the class
-        """Return a dictionary of features
-
-        Arguments:
-        array --
-        idx -- index
-        start --
-        stop --
-        features --
-        name --
-        """
-        try:
-            if(stop == "end"):
-                features[name] = array[idx][start:]
-            elif(stop == "sc"):
-                features[name] = array[idx][start]
-            else:
-                features[name] = array[idx][start:stop]
-        except Exception:
-            features[name] = 'Null'
-        return(features[name])
-
     def taxon_features(self, token, context_array, index, span):
-        # TODO it's long. Perhaps split into several functions?
-        # TODO change variable names, at least sv and c and probably others
-        # TODO catch a less generic exception
-        """Returns a dictionary of features"""
+        """Returns a dictionary of features
+
+        Arguments:
+        token -- a name string consisting of 1-3 words
+        context -- list of words surrounding the token
+        index -- index where the token happens in the document
+        span -- span + index indicates the position of the last word in the token
+        """
         token = token.strip()
+        words = token.split(" ")
         context_span = self._context_span
         features = {}
-        swt = 5 # Weight Increment
         vowels = ['a', 'e', 'i', 'o', 'u']
-        sv = ['a', 'i', 's', 'm']#last letter (LL) weight
-        sv1 = ['e', 'o']# Reduced LL weight
-        svlb = ['i', 'u']# penultimate L weight
+        last_chars = ['a', 'i', 's', 'm'] #last letter (LL) weight
+        last_chars_reduced = ['e', 'o']   # Reduced LL weight
+        last_chars_all = last_chars + last_chars_reduced
+        penultimate_chars = ['i', 'u']    # penultimate L weight
         string_weight = 0
-        words = token.split(" ")
-        #lc = self._populateFeatures(words,0,-1,"sc",features,"last_char")
-        #words = [striptok(pt) for pt in words]
-        #if(lc =="."):
-        #       words[0] = words[0]+"."
-        #self._populateFeatures(words, 0, -3, "end", features, "last3_first")
-        features["last3_first"]   = get_words_slice(words, 0, -3, 1000)
-        #self._populateFeatures(words, 1, -3, "end", features, "last3_second")
-        features["last3_second"]  = get_words_slice(words, 1, -3, 1000)
-        features["last3_third"]   = get_words_slice(words, 2, -3, 1000)
-        features["last2_first"]   = get_words_slice(words, 0, -2, 1000)
-        features["last2_second"]  = get_words_slice(words, 1, -2, 1000)
-        features["last2_third"]   = get_words_slice(words, 2, -2, 1000)
-        features["first_char"]    = get_words_slice(words, 0, 0)
-        features["last_char"]     = get_words_slice(words, 0, -1)
-        features["second_char"]   = get_words_slice(words, 0, 1)
-        features["sec_last_char"] = get_words_slice(words, 0, -2)
+        weight_increment = 5
 
-        features["lastltr_of_fw_in_sv"] = j = get_words_slice(words, 0,
-            -1) in sv
-        string_weight = self._inc_weight(string_weight, swt, j)
-        features["lastltr_of_fw_in_svl"] = j = get_words_slice(words, 0,
-            -1) in sv1
-        string_weight = self._inc_weight(string_weight, swt - 3, j)
-        features["lastltr_of_sw_in_sv"] = j = get_words_slice(words, 1,
-            -1) in sv
-        string_weight = self._inc_weight(string_weight, swt, j)
-        features["lastltr_of_sw_in_svl"] = j = get_words_slice(words, 1,
-            -1) in sv1
-        string_weight = self._inc_weight(string_weight, swt - 3, j)
-        features["lastltr_of_tw_in_sv_or_svl"] = j = get_words_slice(
-        words, 2, -1) in sv + sv1
-        string_weight = self._inc_weight(string_weight, swt - 2, j)
+        features['last3_first_word']  = get_words_slice(words, 0, -3, 1000)
+        features['last3_second_word'] = get_words_slice(words, 1, -3, 1000)
+        features['last3_third_word']  = get_words_slice(words, 2, -3, 1000)
+        features['last2_first_word']  = get_words_slice(words, 0, -2, 1000)
+        features['last2_second_word'] = get_words_slice(words, 1, -2, 1000)
+        features['last2_third_word']  = get_words_slice(words, 2, -2, 1000)
+        features['char1_first_word']  = get_words_slice(words, 0, 0)
+        features['char-1_first_word'] = get_words_slice(words, 0, -1)
+        features['char2_first_word']  = get_words_slice(words, 0, 1)
+        features['char-2_first_word'] = get_words_slice(words, 0, -2)
 
-        features["2lastltr_of_tw_in_sv_or_svl"] = self._populateFeatures(words,
-            2, -2, "sc", features, "2lastltr_of_tw_in_sv_or_svl") in sv + sv1
-        features["last_letter_fw_vwl"] = words[0][-1] in vowels
-        features["2lastltr_of_fw_in_sv"] = j = self._populateFeatures(words,
-            0, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_fw_in_sv1"] = j = self._populateFeatures(words,
-            0, -2, "sc", features, "2lastltr_of_fw_in_sv1") in sv1
-        features["2lastltr_of_fw_in_svlb"] = j = self._populateFeatures(words,
-            0, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["2lastltr_of_sw_in_sv"] = j = self._populateFeatures(words,
-            1, -2, "sc", features, "2lastltr_of_fw_in_sv") in sv
-        features["2lastltr_of_sw_in_sv1"] = j = self._populateFeatures(words,
-            1, -2, "sc", features, "2lastltr_of_sw_in_sv1") in sv1
-        features["2lastltr_of_sw_in_svlb"] = j = self._populateFeatures(words,
-            1, -2, "sc", features, "2lastltr_of_fw_in_svlb") in svlb
-        features["first_in_table"] = self._white_list.has_key(
-            self._populateFeatures(words, 0, 0, "end", features,
-                                   "first_in_table").lower())
-        features["second_in_table"] = self._white_list.has_key(
-            self._populateFeatures(words, 1, 0, "end", features,
-                                   "second_in_table").lower())
-        features["third_in_table"] = self._white_list.has_key(
-            self._populateFeatures(words, 2, 0, "end", features,
-                                   "third_in_table").lower())
-        #context_R = []
-        #context_L = []
-        for c in range(context_span):
-            item = striptok(self._populateFeatures(
-                context_array, index + span + c + 1, 0, "end", features,
-                str(c + 1) + "_context"))
-            #features[str(c+1)+"_context"] = self._populateFeatures(
-            #    context_array,index+span+c+1,0,"end",
-            #    features,str(c+1)+"_context").strip()
-            features[str(c + 1) + "_context"] = item
-            if(index + c - context_span < 0):
-                features[str(c - context_span) + "_context"] = 'Null'
+        features["char-1_first_word_in_lc"] = features['char-1_first_word'] in last_chars
+        if features["char-1_first_word_in_lc"]: string_weight += weight_increment
+
+        features["char-1_first_word_in_lcr"] = features['char-1_first_word'] in last_chars_reduced
+        if features["char-1_first_word_in_lcr"]: string_weight += weight_increment - 3
+
+        char_last_second = get_words_slice(words, 1, -1)
+
+        features["char-1_second_word_in_lc"] = char_last_second in last_chars
+        if features["char-1_second_word_in_lc"]: string_weight += weight_increment
+
+        features["char-1_second_word_in_lcr"] = char_last_second in last_chars_reduced
+        if features["char-1_second_word_in_lcr"]: string_weight += weight_increment - 3
+
+        features["char-1_third_word_in_lca"] = get_words_slice(words, 2, -1) in last_chars_all
+        if features["char-1_third_word_in_lca"]: string_weight += weight_increment - 2
+
+        features["char-2_third_word_in_lca"] = get_words_slice(words, 2, -2) in last_chars_all
+
+        features["char-1_first_word_in_vwl"] = features['char-1_first_word'] in vowels
+        features["char-2_first_word_in_lc"]  = features['char-2_first_word'] in last_chars
+        features["char-2_first_word_in_lcr"] = features['char-2_first_word'] in last_chars_reduced
+        features["char-2_first_word_in_pc"]  = features['char-2_first_word'] in penultimate_chars
+
+        char_before_last_second = get_words_slice(words, 1, -2)
+
+        #TODO BUG!!!! remove after refactoring
+        features["char-2_first_word_in_lc"]  = char_before_last_second
+        # end BUG
+
+        features["char-2_second_word_in_lc"]  = char_before_last_second in last_chars
+        features["char-2_second_word_in_lcr"] = char_before_last_second in last_chars_reduced
+        features["char-2_second_word_in_pc"]  = char_before_last_second in penultimate_chars
+
+        #TODO BUG!!!! remove after refactoring
+        features["char-2_first_word_in_pc"] = char_before_last_second
+        # end BUG
+
+        features["first_word_in_wl"]  = self._white_list.has_key(words[0].lower())
+        features["second_word_in_wl"] = self._white_list.has_key(get_words_slice(words, 1, 0, 1000).lower())
+        features["third_word_in_wl"]  = self._white_list.has_key(get_words_slice(words, 2, 0, 1000).lower())
+        for i in range(context_span):
+            features[str(i + 1) + "_context"] = striptok(get_words_slice(context_array, index + span + i + 1, 0, 1000))
+            if(index + i - context_span < 0):
+                features[str(i - context_span) + "_context"] = 'Null'
             else:
-                item1 = striptok(self._populateFeatures(
-                    context_array, index + c - context_span, 0, "end",
-                    features, str(c - context_span) + "_context"))
-#               features[str(c-context_span)+"_context"] =
-#                   self._populateFeatures(context_array,index+c-context_span,
-#                   0,"end",features,str(c-context_span)+"_context").strip()
-                features[str(c - context_span) + "_context"] = item1
-#                R = features[str(1)+"_context"]
-#                L = features[str(-1)+"_context"]
-#                if( L =="Null"):
-#                        features["pos_tag"+str(-1)+"_context"] = "UKNWN"
-#                else:
-#                        features["pos_tag"+str(-1)+"_context"] =
-#                       nltk.pos_tag([features[str(-1)+"_context"]])[0][1]
-#
-#                if( R =="Null"):
-#                        features["pos_tag"+str(1)+"_context"] = "UKNWN"
-#                else:
-#                        features["pos_tag"+str(1)+"_context"] =
-#                       nltk.pos_tag([features[str(1)+"_context"]])[0][1]
-#       features["pos_tag"+str(1)+"_context"] =
-#           nltk.pos_tag([features[str(1)+"_context"]])[0][1]
-#       features["pos_tag"+str(-1)+"_context"] =
-#           nltk.pos_tag([features[str(-1)+"_context"]])[0][1]
+                features[str(i - context_span) + "_context"] = striptok(get_words_slice(context_array, index + i - context_span, 0, 1000))
         try:
-            features["1up_2_dot_restok"] = (token[0].isupper() and
+            features["1up_2dot_rest_lower_case"] = (token[0].isupper() and
                                             token[1] is "." and
                                             token[2] is " " and
                                             token[3:].islower())
         except Exception:
-            features["1up_2_dot_restok"] = False
+            features["1up_2dot_rest_lower_case"] = False
         features["token"] = token
         for vowel in'aeiou':
             features["count(%s)" % vowel] = token.lower().count(vowel)
             features["has(%s)" % vowel] = vowel in token
-        imp = token[0].isupper() and token[1:].islower()
+        features["capitalized_first_word"] = token[0].isupper() and token[1:].islower()
         if(string_weight > 18):
-            features["Str_Wgt"] = 'A'
-        elif(string_weight >14):
-            features["Str_Wgt"] = 'B'
+            features["string_weight"] = 'A'
+        elif(string_weight > 14):
+            features["string_weight"] = 'B'
         elif(string_weight > 9):
-            features["Str_Wgt"] = 'C'
+            features["string_weight"] = 'C'
         elif(string_weight > 4):
-            features["Str_Wgt"] = 'D'
+            features["string_weight"] = 'D'
         else:
-            features["Str_Wgt"] = 'F'
-        features["imp_feature"] = imp
+            features["string_weight"] = 'F'
         return features
 
-    #def taxon_features(self, token, context_array, index, span):
-    #    """Returns a dictionary of features"""
-    #    token = token.strip()
-    #    words = token.split(" ")
-    #    context_span = self._context_span
-    #    features = {}
-    #    vowels = ['a', 'e', 'i', 'o', 'u']
-    #    last_chars = ['a', 'i', 's', 'm'] #last letter (LL) weight
-    #    last_chars_reduced = ['e', 'o']   # Reduced LL weight
-    #    last_chars_all = last_chars + last_chars_reduced
-    #    penultimate_chars = ['i', 'u']    # penultimate L weight
-    #    string_weight = 0
-    #    weight_increment = 5
-
-    #    features['last3_first']  = get_words_slice(words, 0, -3, 1000)
-    #    features['last3_second'] = get_words_slice(words, 1, -3, 1000)
-    #    features['last3_third']  = get_words_slice(words, 2, -3, 1000)
-    #    features['last2_first']  = get_words_slice(words, 0, -2, 1000)
-    #    features['last2_second'] = get_words_slice(words, 1, -2, 1000)
-    #    features['last2_third']  = get_words_slice(words, 2, -2, 1000)
-    #    features['char1_first']  = get_words_slice(words, 0, 0)
-    #    features['char-1_first'] = get_words_slice(words, 0, -1)
-    #    features['char2_first']  = get_words_slice(words, 0, 1)
-    #    features['char-2_first'] = get_words_slice(words, 0, -2)
-
-    #    features["char-1_first_in_lc"]   = j = features['char-1_first'] in last_chars
-    #    string_weight = self._inc_weight(string_weight, weight_increment, j)
-    #    features["char-1_first_in_lcr"]  = j = features['char-1_first'] in last_chars_reduced
-    #    string_weight = self._inc_weight(string_weight, weight_increment - 3, j)
-
-    #    char_last_second = get_words_slice(words, 1, -1)
-    #    features["char-1_second_in_lc"]  = j = char_last_second in last_chars
-    #    string_weight = self._inc_weight(string_weight, weight_increment, j)
-    #    features["char-1_second_in_lcr"] = j = char_last_second in last_chars_reduced
-    #    string_weight = self._inc_weight(string_weight, weight_increment - 3, j)
-
-    #    features["char-1_third_in_lca"]  = j = get_words_slice(words, 2, -1) in last_chars_all
-    #    string_weight = self._inc_weight(string_weight, weight_increment - 2, j)
-    #    features["char-2_third_in_lca"]  = get_words_slice(words, 2, -2) in last_chars_all
-
-    #    features["char-1_first_in_vwl"] = features['char-1_first'] in vowels
-    #    features["char-2_first_in_lc"]  = features['char-2_first'] in last_chars
-    #    features["char-2_first_in_lcr"] = features['char-2_first'] in last_chars_reduced
-    #    features["char-2_first_in_pc"]  = features['char-2_first'] in penultimate_chars
-
-    #    char_before_last_second = get_words_slice(words, 1, -2)
-    #    features["char-2_second_in_lc"]  = char_before_last_second in last_chars
-    #    features["char-2_second_in_lcr"] = char_before_last_second in last_chars_reduced
-
-    #    features["char-2_second_in_pc"] = char_before_last_second in penultimate_chars
-    #    features["first_in_wl"] = self._white_list.has_key(words[0].lower())
-    #    features["second_in_wl"] = self._white_list.has_key(get_words_slice(words, 1, 0, 1000).lower())
-    #    features["third_in_wl"] = self._white_list.has_key(get_words_slice(words, 2, 0, 1000).lower())
-    #    for c in range(context_span):
-    #        features[str(c + 1) + "_context"] = striptok(get_words_slice(context_array, index + span + c + 1, 0, 1000))
-    #        if(index + c - context_span < 0):
-    #            features[str(c - context_span) + "_context"] = 'Null'
-    #        else:
-    #            features[str(c - context_span) + "_context"] = striptok(get_words_slice(context_array, index + c - context_span, 0, 1000))
-    #    try:
-    #        features["1up_2_dot_restok"] = (token[0].isupper() and
-    #                                        token[1] is "." and
-    #                                        token[2] is " " and
-    #                                        token[3:].islower())
-    #    except Exception:
-    #        features["1up_2_dot_restok"] = False
-    #    features["token"] = token
-    #    for vowel in'aeiou':
-    #        features["count(%s)" % vowel] = token.lower().count(vowel)
-    #        features["has(%s)" % vowel] = vowel in token
-    #    imp = token[0].isupper() and token[1:].islower()
-    #    if(string_weight > 18):
-    #        features["Str_Wgt"] = 'A'
-    #    elif(string_weight > 14):
-    #        features["Str_Wgt"] = 'B'
-    #    elif(string_weight > 9):
-    #        features["Str_Wgt"] = 'C'
-    #    elif(string_weight > 4):
-    #        features["Str_Wgt"] = 'D'
-    #    else:
-    #        features["Str_Wgt"] = 'F'
-    #    features["imp_feature"] = imp
-    #    return features
-
-    def _train_classifier(self, featuresets):
-        # TODO nltk doesn't have MaxentClassifier, probably MaxEntClassifier
-        # TODO define self._model in the __init__ method
+    def _train_classifier_model(self, featuresets):
         """This changes the algorithm that nltk uses to train the model.
 
         Arguments:
