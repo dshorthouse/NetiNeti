@@ -41,6 +41,14 @@ class NameFinder():
         for line in f:
             self._black_dict[line.rstrip()] = 1
         self._model_object = model_object
+        self._text = ''
+        self._names_list = []
+        self._offsets_list = []
+        self._names_dict = {}
+        self._index_dict = {}
+        self._last_genus = ''
+        self._prev_last_genus = ''
+        self._count = -1
 
     def find_names(self, text, resolve_abbreviated_names = False):
         # TODO fix variable names
@@ -80,30 +88,24 @@ class NameFinder():
         token -- list with all tokens from the document searched for scientific names
 
         """
-        icount = -1 #index as we iterate over trigrams
-        nms = [] # list for names
-        last_genus = ""
-        prev_last_genus = ""
-        nhash = {}
         ts = time.clock()
-        oh = create_index(token)
-        offset_list = []
+        self._index_dict = create_index(token)
+        token_string = " ".join(token)
         if(len(token) == 2):
-            token_string = " ".join(token)
             if(self._is_like_binomial(token[0], token[1]) and self._is_a_name(token_string, token, 0, 1)):
-                nms.append(token[0] + " " + token[1])
+                self._names_list.append(token_string)
         elif(len(token) == 1):
             if(len(token[0]) > 2 and token[0][0].isupper() and
-                token[0].isalpha() and self._hCheck(token[0]) and
+                token[0].isalpha() and self._is_not_in_black_list(token[0]) and
                 self._is_a_name(token[0], token, 0, 0)):
-                nms.append(token[0])
+                self._names_list.append(token[0])
         else:
             tgr = nltk.trigrams(token)
             #not generating bigrams...getting them from trigrams..
             # little more efficient
             for a, b, c in tgr:
-                icount += 1
-                #print a,icount
+                self._count += 1
+                #print a,self._count
                 p, q, r = clean_token(a.strip(), b.strip(), c)
                 #p1,q1,r1 = a.strip(),b.strip(),c.strip()
                 #print "p q r = ", p,"--",q,"--",r
@@ -112,66 +114,66 @@ class NameFinder():
                 tg = remove_trailing_period(p + " " + q + " " + r)
                 j = -1
                 count = 0
-                if(nms):
-                    while(abs(j) <= len(nms)):
-                        if(nms[j][1] != "[" and nms[j][1] != "."):
+                if(self._names_list):
+                    while(abs(j) <= len(self._names_list)):
+                        if(self._names_list[j][1] != "[" and self._names_list[j][1] != "."):
                             if(count == 0):
-                                last_genus = nms[j].split(" ")[0]
+                                self._last_genus = self._names_list[j].split(" ")[0]
                                 count = count + 1
                             else:
-                                prev_last_genus = nms[j].split(" ")[0]
+                                self._prev_last_genus = self._names_list[j].split(" ")[0]
                                 break
                         j = j - 1
-                if(self._isGood3(p, q, r)):
+                if(self._is_like_trinomial(p, q, r)):
                     #print "good trigram ...."
-                    if(self._is_a_name(tg, token, icount, 2)):
+                    if(self._is_a_name(tg, token, self._count, 2)):
                         #print "passed trigram..."
-                        start, end = self._getOffsets(oh, icount, a, b, c)
-                        offset_list.append((start, end))
-                        self._resolve(p, q, r, nhash, nms, last_genus,
-                                      prev_last_genus)
+                        start, end = self._getOffsets(self._index_dict, self._count, a, b, c)
+                        self._offsets_list.append((start, end))
+                        self._resolve(p, q, r, self._names_dict, self._names_list, self._last_genus,
+                                      self._prev_last_genus)
                 elif(self._is_like_binomial(p, q)):
                     #print "good bigram..."
-                    if(self._is_a_name(bg, token, icount, 1)):
+                    if(self._is_a_name(bg, token, self._count, 1)):
                         #print "passed bigram..."
-                        start, end = self._getOffsets(oh, icount, a, b, "")
-                        offset_list.append((start, end))
-                        self._resolve(p, q, "", nhash, nms, last_genus,
-                                      prev_last_genus)
-                elif(self._uninomialCheck(p)):
+                        start, end = self._getOffsets(self._index_dict, self._count, a, b, "")
+                        self._offsets_list.append((start, end))
+                        self._resolve(p, q, "", self._names_dict, self._names_list, self._last_genus,
+                                      self._prev_last_genus)
+                elif(self._is_like_uninomial(p)):
                     if(self._is_a_name(re.sub("\.", ". ", remove_trailing_period(p)),
-                                        token, icount, 0)):
-                        start, end = self._getOffsets(oh, icount, a, "", "")
-                        offset_list.append((start, end))
-                        nms.append(remove_trailing_period(p))
+                                        token, self._count, 0)):
+                        start, end = self._getOffsets(self._index_dict, self._count, a, "", "")
+                        self._offsets_list.append((start, end))
+                        self._names_list.append(remove_trailing_period(p))
                     elif(self._endingCheck(p)):
-                        start, end = self._getOffsets(oh, icount, a, "", "")
-                        offset_list.append((start, end))
-                        nms.append(remove_trailing_period(p))
+                        start, end = self._getOffsets(self._index_dict, self._count, a, "", "")
+                        self._offsets_list.append((start, end))
+                        self._names_list.append(remove_trailing_period(p))
                 elif(self._endingCheck(p)):
-                    if(self._hCheck(p) and p[0].isupper() and
+                    if(self._is_not_in_black_list(p) and p[0].isupper() and
                         remove_trailing_period(p).isalpha()):
-                        start, end = self._getOffsets(oh, icount, a, "", "")
-                        offset_list.append((start, end))
-                        nms.append(remove_trailing_period(p))
+                        start, end = self._getOffsets(self._index_dict, self._count, a, "", "")
+                        self._offsets_list.append((start, end))
+                        self._names_list.append(remove_trailing_period(p))
         try:
             if(self._is_like_binomial(tgr[-1][-2], tgr[-1][-1])):
                 if(self._is_a_name(remove_trailing_period(tgr[-1][-2] + " " +
-                    tgr[-1][-1]), token, icount + 1, 1)):
-                    self._resolve(tgr[-1][-2], tgr[-1][-1], "", nhash, nms,
-                    last_genus, prev_last_genus)
-                    #nms.append(remove_trailing_period(tgr[-1][-2]+" "+tgr[-1][-1]))
-                elif(self._uninomialCheck(tgr[-1][-2])):
+                    tgr[-1][-1]), token, self._count + 1, 1)):
+                    self._resolve(tgr[-1][-2], tgr[-1][-1], "", self._names_dict, self._names_list,
+                    self._last_genus, self._prev_last_genus)
+                    #self._names_list.append(remove_trailing_period(tgr[-1][-2]+" "+tgr[-1][-1]))
+                elif(self._is_like_uninomial(tgr[-1][-2])):
                     if(self._is_a_name(re.sub("\.", " ",
-                        remove_trailing_period(tgr[-1][-2])), token, icount + 1, 0)):
-                        nms.append(remove_trailing_period(tgr[-1][-2]))
+                        remove_trailing_period(tgr[-1][-2])), token, self._count + 1, 0)):
+                        self._names_list.append(remove_trailing_period(tgr[-1][-2]))
         except Exception:
             print ""
         te = time.clock()
         nnewn = []
         nnofl = []
-        #print len(offset_list)
-        for o in offset_list:
+        #print len(self._offsets_list)
+        for o in self._offsets_list:
             nme = self._text[o[0]:o[1]]
             pts = nme.split(" ")
             if(pts[0][0] + pts[0][-1] == "()"):
@@ -193,7 +195,7 @@ class NameFinder():
         print (te - ts)
         #print len(nnewn)
         #print len(nnofl)
-        return(nms, nnewn, nnofl)
+        return(self._names_list, nnewn, nnofl)
 
     def _resolve_abbreviated_names(self, names_list, names_set):
         """
@@ -211,7 +213,6 @@ class NameFinder():
         print names_dict.keys()
         for name in abbr_names:
             if names_dict.has_key(name):
-                print name, names_dict[name]
                 resolved_names.append(name[0] + "[" + names_dict[name] + "]" + " " + name[3:])
             else:
                 resolved_names.append(name)
@@ -219,20 +220,23 @@ class NameFinder():
         resolved_names.sort()
         return resolved_names
 
-    def _hCheck(self, a):
-        # TODO change name to something useful, not _h_check
-        # TODO change variables (a, w, j, e1) to something useful
-        """Returns a boolean.
-        checks if a word is in a black list
+    def _is_like_uninomial(self, word):
+        """Returns a boolean
+        Checks if a word looks like a uninomial.
 
         Arguments:
-        a -- a token, first element of a trigram
+        word -- a word to check as a ponential uninomial
 
         """
-        a = remove_trailing_period(a)
-        e1 = a.split("-")
-        j = [self._black_dict.has_key(w) for w in e1]
-        return(not True in j and not self._black_dict.has_key(a.lower()))
+        #TODO: This method currently only allows uninomials of size larger than 5,
+        # however there are uninomials which are 2 characters in size.
+
+        is_like_uninomial = (len(word) > 5 and word[0].isupper() and word[1:].islower() and
+            (remove_trailing_period(word).isalpha() or (word[0].isupper() and
+                                        word[1] == "." and word[2].islower() and
+                                        remove_trailing_period(word[2:]).isalpha())) and
+                                        self._is_not_in_black_list(word))
+        return is_like_uninomial
 
     def _is_like_binomial(self, first_word, second_word):
         """Returns a boolean.
@@ -247,41 +251,53 @@ class NameFinder():
             is_abbr_word = (first_word[1] == '.' and len(first_word) == 2)
             is_a_candidate = first_word[0].isupper() and second_word.islower() and ((first_word[1:].islower() and
                 first_word.isalpha()) or is_abbr_word) and (remove_trailing_period(second_word).isalpha() or '-' in second_word)
-            return(is_a_candidate and self._hCheck(first_word) and self._hCheck(second_word))
+            return(is_a_candidate and self._is_not_in_black_list(first_word) and self._is_not_in_black_list(second_word))
         else:
             return False
 
-    def _isGood3(self, a, b, c):
-        # TODO change name to something useful, not _is_good_3
-        # TODO change variable names to something useful
-        #      including a, b, c, s1, b_par_exp, s2
+    def _is_like_trinomial(self, first_word, second_word, third_word):
         """Returns a boolean.
-        Checks if a trigram looks right
+        Checks if a trigram looks like a trinomial name
 
         Arguments:
-        a -- first element of a trigram
-        b -- second element of a trigram
-        c -- third element of a trigram
+        first_word -- first element of a trigram
+        second_word -- second element of a trigram
+        third_word -- third element of a trigram
 
         """
-        if(len(a) > 1 and len(b) > 1 and len(c) > 1):
-            s1 = c.islower() and remove_trailing_period(c).isalpha()
-            b_par_exp = b[0] + b[-1] == "()"
-            if(b_par_exp):
-                s2 = b[1].isupper() and ((b[2] == "." and len(b) == 4) or
-                                        b[2:-1].islower() and
-                                        b[2:-1].isalpha()) and b[-1] != "."
-                return(s1 and self._hCheck(c) and s2 and (a[0].isupper() and
-                                                         ((a[1] == "." and
-                                                           len(a) == 2) or
-                                                          a[1:].islower() and
-                                                          a.isalpha())))
+        if len(first_word) > 1 and len(second_word) > 1 and len(third_word) > 1:
+            third_word_ok = third_word.islower() and remove_trailing_period(third_word).isalpha()
+
+            if second_word[0] + second_word[-1] == "()":
+                second_word_ok = second_word[1].isupper() and ((second_word[2] == "." and len(second_word) == 4) or
+                                        second_word[2:-1].islower() and
+                                        second_word[2:-1].isalpha()) and second_word[-1] != "."
+                return (second_word_ok and third_word_ok and self._is_not_in_black_list(third_word) and (first_word[0].isupper() and
+                                                         ((first_word[1] == "." and
+                                                           len(first_word) == 2) or
+                                                          first_word[1:].islower() and
+                                                          first_word.isalpha())))
             else:
-                return(s1 and self._is_like_binomial(a, b) and self._hCheck(c))
-        elif(len(a) > 1 and len(b) == 0 and len(c) > 1):
-            return(self._is_like_binomial(a, c))
+                return (third_word_ok and self._is_like_binomial(first_word, second_word) and self._is_not_in_black_list(third_word))
+        elif len(first_word) > 1 and len(second_word) == 0 and len(third_word) > 1:
+            return self._is_like_binomial(first_word, third_word)
         else:
-            return(False)
+            return False
+
+    def _is_not_in_black_list(self, word):
+        # TODO change name to something useful, not _h_check
+        # TODO change variables (word, w, j, e1) to something useful
+        """Returns a boolean.
+        checks if a word is in a black list
+
+        Arguments:
+        word -- a token, first element of a trigram
+
+        """
+        word = remove_trailing_period(word)
+        word_parts = word.split("-")
+        res = [self._black_dict.has_key(part) for part in word_parts]
+        return (True not in res and not self._black_dict.has_key(word.lower()))
 
     def _is_a_name(self, token, context, index, span):
         """Checks if a token is a scientific name or not.
@@ -351,27 +367,6 @@ class NameFinder():
         st = st.strip()
         return oh[index], oh[index] + len(st)
 
-    def _uninomialCheck(self, tok):
-        # TODO rename method to _uninomial_check or similar
-        # TODO rename variable tok to token
-        # TODO since neither remdot nor h_check refer to the object
-        #  neither does this method
-        """Checks to see if a token is a uninomial and returns a boolean.
-
-        This method currently only allows uninomials of size larger than 5,
-        however there are uninomial which are 2 characters in size.
-
-        Arguments:
-        tok -- the token to check as a ponential uninomial
-        """
-        if(len(tok) > 5 and tok[0].isupper() and tok[1:].islower() and
-            (remove_trailing_period(tok).isalpha() or (tok[0].isupper() and
-                                        tok[1] == "." and tok[2].islower() and
-                                        remove_trailing_period(tok[2:]).isalpha())) and
-                                        self._hCheck(tok)):
-            return(True)
-        else:
-            return(False)
 
     def _endingCheck(self, tok):
         # TODO rename method to _ending_check or similar
