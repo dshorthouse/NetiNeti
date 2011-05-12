@@ -90,7 +90,7 @@ class NameFinder():
         offset_list = []
         if(len(token) == 2):
             token_string = " ".join(token)
-            if(self._looks_like_binomial(token[0], token[1]) and self._is_a_name(token_string, token, 0, 1)):
+            if(self._is_like_binomial(token[0], token[1]) and self._is_a_name(token_string, token, 0, 1)):
                 nms.append(token[0] + " " + token[1])
         elif(len(token) == 1):
             if(len(token[0]) > 2 and token[0][0].isupper() and
@@ -130,7 +130,7 @@ class NameFinder():
                         offset_list.append((start, end))
                         self._resolve(p, q, r, nhash, nms, last_genus,
                                       prev_last_genus)
-                elif(self._looks_like_binomial(p, q)):
+                elif(self._is_like_binomial(p, q)):
                     #print "good bigram..."
                     if(self._is_a_name(bg, token, icount, 1)):
                         #print "passed bigram..."
@@ -155,7 +155,7 @@ class NameFinder():
                         offset_list.append((start, end))
                         nms.append(remove_trailing_period(p))
         try:
-            if(self._looks_like_binomial(tgr[-1][-2], tgr[-1][-1])):
+            if(self._is_like_binomial(tgr[-1][-2], tgr[-1][-1])):
                 if(self._is_a_name(remove_trailing_period(tgr[-1][-2] + " " +
                     tgr[-1][-1]), token, icount + 1, 1)):
                     self._resolve(tgr[-1][-2], tgr[-1][-1], "", nhash, nms,
@@ -234,21 +234,19 @@ class NameFinder():
         j = [self._black_dict.has_key(w) for w in e1]
         return(not True in j and not self._black_dict.has_key(a.lower()))
 
-    def _looks_like_binomial(self, first_word, second_word):
+    def _is_like_binomial(self, first_word, second_word):
         """Returns a boolean.
-        Checks if a bigram looks like a binomial name
+        Checks if first_word bigram can potentially be a binomial name
 
         Arguments:
-        first_word  -- first element of a bigram
+        first_word -- first element of a bigram
         second_word -- second element of a bigram
 
         """
-        if(len(first_word) > 1 and len(second_word) > 1):
-            is_abbr_word = first_word[1] == '.' and len(first_word) == 2
-            is_a_candidate = (first_word[0].isupper()
-                             and second_word.islower()
-                             and ((first_word[1:].islower() and first_word.isalpha()) or is_abbr_word)
-                             and (remove_trailing_period(first_word).isalpha() or '-' in second_word))
+        if len(first_word) > 1 and len(second_word) > 1:
+            is_abbr_word = (first_word[1] == '.' and len(first_word) == 2)
+            is_a_candidate = first_word[0].isupper() and second_word.islower() and ((first_word[1:].islower() and
+                first_word.isalpha()) or is_abbr_word) and (remove_trailing_period(second_word).isalpha() or '-' in second_word)
             return(is_a_candidate and self._hCheck(first_word) and self._hCheck(second_word))
         else:
             return False
@@ -279,9 +277,9 @@ class NameFinder():
                                                           a[1:].islower() and
                                                           a.isalpha())))
             else:
-                return(s1 and self._looks_like_binomial(a, b) and self._hCheck(c))
+                return(s1 and self._is_like_binomial(a, b) and self._hCheck(c))
         elif(len(a) > 1 and len(b) == 0 and len(c) > 1):
-            return(self._looks_like_binomial(a, c))
+            return(self._is_like_binomial(a, c))
         else:
             return(False)
 
