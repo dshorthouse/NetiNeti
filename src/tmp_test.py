@@ -6,7 +6,7 @@ import shlex
 import math
 import sys
 
-num_cycles = 6
+num_cycles = 3
 
 if len(sys.argv) > 1:
     try:

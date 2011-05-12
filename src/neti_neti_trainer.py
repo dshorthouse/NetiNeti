@@ -141,7 +141,14 @@ class NetiNetiTrainer:
         return featuresets
 
     def taxon_features(self, token, context_array, index, span):
-        """Returns a dictionary of features"""
+        """Returns a dictionary of features
+
+        Arguments:
+        token -- a name string consisting of 1-3 words
+        context -- list of words surrounding the token
+        index -- index where the token happens in the document
+        span -- span + index indicates the position of the last word in the token
+        """
         token = token.strip()
         words = token.split(" ")
         context_span = self._context_span
@@ -197,21 +204,21 @@ class NetiNetiTrainer:
 
         features["char-2_second_word_in_lc"]  = char_before_last_second in last_chars
         features["char-2_second_word_in_lcr"] = char_before_last_second in last_chars_reduced
-        features["char-2_second_word_in_pc"] = char_before_last_second in penultimate_chars
+        features["char-2_second_word_in_pc"]  = char_before_last_second in penultimate_chars
 
         #TODO BUG!!!! remove after refactoring
         features["char-2_first_word_in_pc"] = char_before_last_second
         # end BUG
 
-        features["first_word_in_wl"] = self._white_list.has_key(words[0].lower())
+        features["first_word_in_wl"]  = self._white_list.has_key(words[0].lower())
         features["second_word_in_wl"] = self._white_list.has_key(get_words_slice(words, 1, 0, 1000).lower())
-        features["third_word_in_wl"] = self._white_list.has_key(get_words_slice(words, 2, 0, 1000).lower())
-        for c in range(context_span):
-            features[str(c + 1) + "_context"] = striptok(get_words_slice(context_array, index + span + c + 1, 0, 1000))
-            if(index + c - context_span < 0):
-                features[str(c - context_span) + "_context"] = 'Null'
+        features["third_word_in_wl"]  = self._white_list.has_key(get_words_slice(words, 2, 0, 1000).lower())
+        for i in range(context_span):
+            features[str(i + 1) + "_context"] = striptok(get_words_slice(context_array, index + span + i + 1, 0, 1000))
+            if(index + i - context_span < 0):
+                features[str(i - context_span) + "_context"] = 'Null'
             else:
-                features[str(c - context_span) + "_context"] = striptok(get_words_slice(context_array, index + c - context_span, 0, 1000))
+                features[str(i - context_span) + "_context"] = striptok(get_words_slice(context_array, index + i - context_span, 0, 1000))
         try:
             features["1up_2dot_rest_lower_case"] = (token[0].isupper() and
                                             token[1] is "." and

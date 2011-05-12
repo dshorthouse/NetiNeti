@@ -83,65 +83,60 @@ def get_words_slice(words, word_index, first_char_index, second_char_index = Non
     if result == []: result = 'Null'
     return result
 
-def remove_dot(string):
-    """Return the string with no dot at the end of it.
 
-    removes period from words that are not an obvious genus abbreviaion
-    sometimes people abbreviate genus to 2 or 3 letters, would it be a problem?
-    we assume here that abbr is almost alwqys 1 letter
-
-    Arguments:
-    a -- token, usually the first element of a trigram
-
-    """
-    if len(string) > 2:
-        return string.rstrip(".")
-    else:
-        return string
-
-def clean_token(a, b, c):
-    # TODO rename method to _clean_tokens or similar
-    # TODO rename variables (a, b, c, a1, b1, ra, rb)
+def clean_token(first_word, second_word, third_word):
     """Cleans the tokens.
     Intelligent strip of trigram parts. We are assuming a and b are stripped
 
     Arguments:
-    a -- first element of a trigram
-    b -- second element of a trigram
-    c -- third element of a trigram
+    first_word -- first element of a trigram
+    second_word -- second element of a trigram
+    third_word -- third element of a trigram
 
     """
-    ra = a
-    rb = b
-    if len(a) > 1:
-        if a[-1] == ".":
-            ra = left_strip(a)[0]
+    res = [first_word, second_word, striptok(third_word)]
+    if len(first_word) > 1:
+        if first_word[-1] == ".":
+            res[0] = left_strip(first_word)[0]
         else:
-            ra = striptok(a)
-    if len(b) > 1:
-        if b[0] + b[-1] == "()":
+            res[0] = striptok(first_word)
+    if len(second_word) > 1:
+        if second_word[0] + second_word[-1] == "()":
             pass
-        elif b[-1] == "-":
-            rb = left_strip(b)[0]
+        elif second_word[-1] == "-":
+            res[1] = left_strip(second_word)[0]
         else:
-            rb = striptok(b)
-    return ra, rb, striptok(c)
+            res[1] = striptok(second_word)
+    return res
 
-def create_index(token):
-    # TODO rename method to _create_index or similar
-    # TODO there is lots of programming cleanup that can happen here
-    # TODO rename variables, specifically oh
-    # TODO could remove method from the class
-    """Returns a dictionary indexes for all tockens. Key is a token number in
+def create_index(tokens):
+    """Returns a dictionary of indexes for all tockens. Key is a token index in
     the document, Value is the length of the token.
 
     Arguments:
     token -- list of all tokens from the document checked for scientific names
 
     """
-    length = len(token[0]) + 1
-    oh = {0:0}
-    for i in range(1,len(token)):
-        oh[i] = length
-        length = length + len(token[i]) + 1 #or delim length
-    return oh
+    length = len(tokens[0]) + 1
+    indices_dict = {0:0}
+    for i in range(1, len(tokens)):
+        indices_dict[i] = length
+        length += len(tokens[i]) + 1
+    return indices_dict
+
+def remove_trailing_period(string):
+    """Returns the string with removed trailing period
+
+    removes period from words that are not an obvious genus abbreviaion
+    we assume here that genus is almost always abbreviated to 1 letter
+
+    Arguments:
+    string -- a string, usually the first element of a trigram
+
+    """
+    #TODO: sometimes people abbreviate genus to 2 or 3 letters, would it be a problem?
+
+    if len(string) > 2:
+        return string.rstrip(".")
+    else:
+        return string
