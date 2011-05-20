@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 from neti_neti_trainer import NetiNetiTrainer
-from netineti import NameFinder
+from neti_neti import NameFinder
 import subprocess
 import shlex
 import math
 import sys
+import time
 
 num_cycles = 3
 
@@ -38,11 +39,14 @@ def standard_deviation(population):
 population = []
 
 for i in range(1, num_cycles):
-    neti_neti = NetiNetiTrainer()
     print "going through the cycle %s" % i
+    time_start = time.clock()
+    neti_neti = NetiNetiTrainer()
+    time_training = time.clock()
+    print "Training time: %s" % (time_training - time_start)
     name_finder = NameFinder(neti_neti)
-
     result = name_finder.find_names(open("data/test.txt").read())
+    print "Name finding time: %s" % (time.clock() - time_training)
 
     test_result_file = open("data/test_result_after_refactoring.txt", 'w')
 
