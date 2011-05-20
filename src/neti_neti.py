@@ -68,8 +68,8 @@ class NameFinder():
         space_regex = re.compile('\s')
         tokens = space_regex.split(text) #any reason not to use nltk tokenizer?
 
-        names, names_occurance, offsets = self._find_names_in_tokens(tokens)
-        names_set = set(names)
+        names_verbatim, offsets = self._find_names_in_tokens(tokens)
+        names_set = set(self._names_list)
         names_list = list(names_set)
         resolved_names = None
         if resolve_abbreviated_names:
@@ -77,7 +77,7 @@ class NameFinder():
         else:
             names_list.sort()
             resolved_names = names_list
-        return "\n".join(resolved_names), names_occurance, offsets
+        return "\n".join(resolved_names), names_verbatim, offsets
 
     def _find_names_in_tokens(self, tokens):
         """
@@ -103,24 +103,24 @@ class NameFinder():
             trigrams = nltk.trigrams(tokens)
             self._walk_trigrams(trigrams, tokens)
             self._check_last_bigram_unigram(trigrams[-1], tokens)
-        self._generate_output()
+        return self._generate_output()
 
-    def _generate_output(self)
-        nnewn = []
-        nnofl = []
+    def _generate_output(self):
+        verbatim_names = []
+        offsets = []
         for o in self._offsets_list:
-            nme = self._text[o[0]:o[1]]
-            pts = nme.split(" ")
-            if(pts[0][0] + pts[0][-1] == "()"):
-                no1 = o[0]
-                no2 = o[1] + right_strip(nme)[1]
+            name = self._text[o[0]:o[1]]
+            parts = name.split(" ")
+            if(parts[0][0] + parts[0][-1] == "()"):
+                offset1 = o[0]
+                offset2 = o[1] + right_strip(name)[1]
             else:
-                no1 = o[0] + left_strip(nme)[1]
-                no2 = o[1] + right_strip(nme)[1]
-            tj = self._text[no1:no2]
-            nnewn.append(tj)
-            nnofl.append((no1, no2))
-        return(self._names_list, nnewn, nnofl)
+                offset1 = o[0] + left_strip(name)[1]
+                offset2 = o[1] + right_strip(name)[1]
+            name = self._text[offset1:offset2]
+            verbatim_names.append(name)
+            offsets.append((offset1, offset2))
+        return(verbatim_names, offsets)
 
     def _walk_trigrams(self, trigrams, tokens):
         for word1_orig, word2_orig, word3_orig in trigrams:
