@@ -79,123 +79,106 @@ class NameFinder():
             resolved_names = names_list
         return "\n".join(resolved_names), names_occurance, offsets
 
-    def _find_names_in_tokens(self, token):
+    def _find_names_in_tokens(self, tokens):
         """
         takes list of all tokens from a document and returns back tuple
         of found names. First element is a an alphabetised list of unique names, second -- names in the order of their occurance in the document, third --  offsets for each mention of the name in the document
 
         Arguments:
-        token -- list with all tokens from the document searched for scientific names
+        tokens -- list with all tokens from the document searched for scientific names
 
         """
-        ts = time.clock()
-        self._index_dict = create_index(token)
-        token_string = " ".join(token)
-        if(len(token) == 2):
-            if(self._is_like_binomial(token[0], token[1]) and self._is_a_name(token_string, token, 0, 1)):
+        self._index_dict = create_index(tokens)
+        token_string = " ".join(tokens)
+
+        if(len(tokens) == 2):
+            if(self._is_like_binomial(tokens[0], tokens[1]) and self._is_a_name(token_string, tokens, 0, 1)):
                 self._names_list.append(token_string)
-        elif(len(token) == 1):
-            if(len(token[0]) > 2 and token[0][0].isupper() and
-                token[0].isalpha() and self._is_not_in_black_list(token[0]) and
-                self._is_a_name(token[0], token, 0, 0)):
-                self._names_list.append(token[0])
+        elif(len(tokens) == 1):
+            if(len(tokens[0]) > 2 and tokens[0][0].isupper() and
+                tokens[0].isalpha() and self._is_not_in_black_list(tokens[0]) and
+                self._is_a_name(tokens[0], tokens, 0, 0)):
+                self._names_list.append(tokens[0])
         else:
-            tgr = nltk.trigrams(token)
-            #not generating bigrams...getting them from trigrams..
-            # little more efficient
-            for a, b, c in tgr:
-                self._count += 1
-                #print a,self._count
-                p, q, r = clean_token(a.strip(), b.strip(), c)
-                #p1,q1,r1 = a.strip(),b.strip(),c.strip()
-                #print "p q r = ", p,"--",q,"--",r
-                #print "p1,q1,r1 = ",p1,q1,r1
-                bg = remove_trailing_period(p + " " + q)
-                tg = remove_trailing_period(p + " " + q + " " + r)
-                j = -1
-                count = 0
-                if(self._names_list):
-                    while(abs(j) <= len(self._names_list)):
-                        if(self._names_list[j][1] != "[" and self._names_list[j][1] != "."):
-                            if(count == 0):
-                                self._last_genus = self._names_list[j].split(" ")[0]
-                                count = count + 1
-                            else:
-                                self._prev_last_genus = self._names_list[j].split(" ")[0]
-                                break
-                        j = j - 1
-                if(self._is_like_trinomial(p, q, r)):
-                    #print "good trigram ...."
-                    if(self._is_a_name(tg, token, self._count, 2)):
-                        #print "passed trigram..."
-                        start, end = self._getOffsets(self._index_dict, self._count, a, b, c)
-                        self._offsets_list.append((start, end))
-                        self._resolve(p, q, r, self._names_dict, self._names_list, self._last_genus,
-                                      self._prev_last_genus)
-                elif(self._is_like_binomial(p, q)):
-                    #print "good bigram..."
-                    if(self._is_a_name(bg, token, self._count, 1)):
-                        #print "passed bigram..."
-                        start, end = self._getOffsets(self._index_dict, self._count, a, b, "")
-                        self._offsets_list.append((start, end))
-                        self._resolve(p, q, "", self._names_dict, self._names_list, self._last_genus,
-                                      self._prev_last_genus)
-                elif(self._is_like_uninomial(p)):
-                    if(self._is_a_name(re.sub("\.", ". ", remove_trailing_period(p)),
-                                        token, self._count, 0)):
-                        start, end = self._getOffsets(self._index_dict, self._count, a, "", "")
-                        self._offsets_list.append((start, end))
-                        self._names_list.append(remove_trailing_period(p))
-                    elif(self._endingCheck(p)):
-                        start, end = self._getOffsets(self._index_dict, self._count, a, "", "")
-                        self._offsets_list.append((start, end))
-                        self._names_list.append(remove_trailing_period(p))
-                elif(self._endingCheck(p)):
-                    if(self._is_not_in_black_list(p) and p[0].isupper() and
-                        remove_trailing_period(p).isalpha()):
-                        start, end = self._getOffsets(self._index_dict, self._count, a, "", "")
-                        self._offsets_list.append((start, end))
-                        self._names_list.append(remove_trailing_period(p))
-        try:
-            if(self._is_like_binomial(tgr[-1][-2], tgr[-1][-1])):
-                if(self._is_a_name(remove_trailing_period(tgr[-1][-2] + " " +
-                    tgr[-1][-1]), token, self._count + 1, 1)):
-                    self._resolve(tgr[-1][-2], tgr[-1][-1], "", self._names_dict, self._names_list,
-                    self._last_genus, self._prev_last_genus)
-                    #self._names_list.append(remove_trailing_period(tgr[-1][-2]+" "+tgr[-1][-1]))
-                elif(self._is_like_uninomial(tgr[-1][-2])):
-                    if(self._is_a_name(re.sub("\.", " ",
-                        remove_trailing_period(tgr[-1][-2])), token, self._count + 1, 0)):
-                        self._names_list.append(remove_trailing_period(tgr[-1][-2]))
-        except Exception:
-            print ""
-        te = time.clock()
+            trigrams = nltk.trigrams(tokens)
+            self._walk_trigrams(trigrams, tokens)
+            self._check_last_bigram_unigram(trigrams[-1], tokens)
+        self._generate_output()
+
+    def _generate_output(self)
         nnewn = []
         nnofl = []
-        #print len(self._offsets_list)
         for o in self._offsets_list:
             nme = self._text[o[0]:o[1]]
             pts = nme.split(" ")
             if(pts[0][0] + pts[0][-1] == "()"):
-                #print nme+"...."
                 no1 = o[0]
                 no2 = o[1] + right_strip(nme)[1]
             else:
-                #print nme
-                #print "o1 ",o[0]
-                #print "o2 ",o[1]
-                #print "left strip...", left_strip(nme)[1]
-                #print "right strip...",right_strip(nme)[1]
-                #print "................."
                 no1 = o[0] + left_strip(nme)[1]
                 no2 = o[1] + right_strip(nme)[1]
             tj = self._text[no1:no2]
             nnewn.append(tj)
             nnofl.append((no1, no2))
-        print (te - ts)
-        #print len(nnewn)
-        #print len(nnofl)
         return(self._names_list, nnewn, nnofl)
+
+    def _walk_trigrams(self, trigrams, tokens):
+        for word1_orig, word2_orig, word3_orig in trigrams:
+            self._count += 1
+            word1, word2, word3 = clean_token(word1_orig.strip(), word2_orig.strip(), word3_orig)
+            bigram = remove_trailing_period(word1 + " " + word2)
+            trigram = remove_trailing_period(word1 + " " + word2 + " " + word3)
+            self._find_previous_genera()
+            if(self._is_like_trinomial(word1, word2, word3)):
+                if(self._is_a_name(trigram, tokens, self._count, 2)):
+                    start, end = self._get_offsets(word1_orig, word2_orig, word3_orig)
+                    self._offsets_list.append((start, end))
+                    self._resolve_abbreviation(word1, word2, word3)
+            elif(self._is_like_binomial(word1, word2)):
+                if(self._is_a_name(bigram, tokens, self._count, 1)):
+                    start, end = self._get_offsets(word1_orig, word2_orig)
+                    self._offsets_list.append((start, end))
+                    self._resolve_abbreviation(word1, word2, word3)
+            elif(self._is_like_uninomial(word1)):
+                if(self._is_a_name(re.sub("\.", ". ", remove_trailing_period(word1)),
+                                    tokens, self._count, 0)):
+                    start, end = self._get_offsets(word1_orig)
+                    self._offsets_list.append((start, end))
+                    self._names_list.append(remove_trailing_period(word1))
+                elif(self._has_uninomial_ending(word1)):
+                    start, end = self._get_offsets(word1_orig)
+                    self._offsets_list.append((start, end))
+                    self._names_list.append(remove_trailing_period(word1))
+            elif(self._has_uninomial_ending(word1)):
+                if(self._is_not_in_black_list(word1) and word1[0].isupper() and
+                    remove_trailing_period(word1).isalpha()):
+                    start, end = self._get_offsets(word1_orig)
+                    self._offsets_list.append((start, end))
+                    self._names_list.append(remove_trailing_period(word1))
+
+    def _check_last_bigram_unigram(self, trigram, tokens):
+        bigram = remove_trailing_period(trigram[-2] + " " + trigram[-1])
+        unigram = re.sub("\. ", " ", remove_trailing_period(trigram[-2]))
+        if self._is_like_binomial(trigram[-2], trigram[-1]):
+            if self._is_a_name(bigram, tokens, self._count + 1, 1):
+                self._resolve_abbreviation(trigram[-2], trigram[-1], "")
+            elif self._is_like_uninomial(unigram):
+                if self._is_a_name(unigram, tokens, self._count + 1, 0):
+                    self._names_list.append(unigram)
+
+    def _find_previous_genera(self):
+        i = -1
+        count = 0
+        if(self._names_list):
+            while(abs(i) <= len(self._names_list)):
+                if(self._names_list[i][1] != "[" and self._names_list[i][1] != "."):
+                    if(count == 0):
+                        self._last_genus = self._names_list[i].split(" ")[0]
+                        count = count + 1
+                    else:
+                        self._prev_last_genus = self._names_list[i].split(" ")[0]
+                        break
+                i -= 1
 
     def _resolve_abbreviated_names(self, names_list, names_set):
         """
@@ -311,110 +294,65 @@ class NameFinder():
         features = self._model_object.taxon_features(token, context, index, span)
         return self._model_object.get_model().classify(features) == 'taxon'
 
-    def _resolve(self, a, b, c, nhash, nms, last_genus, plg):
-        # TODO change all variable names to something useful
-        # TODO programming challenge! you only need to call remDot on c since
-        #  it only affects the last letter in the string
-        """
+    def _resolve_abbreviation(self, word1, word2, word3):
+        """Tries to resolve abbreviated genus in a name and adds result to the names list
 
         Arguments:
-        a -- describe argument
-        b -- describe argument
-        c -- describe argument
-        nhash -- describe argument
-        nms -- describe argument
-        last_genus -- describe argument
-        plg -- describe argument
+        word1 -- the first word of a name
+        word2 -- the second word of a name
+        word3 -- the third word of a name
 
         """
-        #gr =remove_trailing_period((a+" "+b+" "+c).strip())
-        if(b == ""):
-            gr = remove_trailing_period((a + " " + c).strip())
+        if(word2 == ""):
+            name = remove_trailing_period((word1 + " " + word3).strip())
         else:
-            gr = remove_trailing_period((a + " " + b + " " + c).strip())
-        if(gr[1] == "." and gr[2] == " "):
-            if(nhash.has_key(gr)):
-                nms.append(remove_trailing_period((a[0] + "[" + nhash[gr] + "]" + " " +
-                                        b + " " + c).strip()))
-            elif(last_genus and a[0] == last_genus[0]):
-                nms.append(remove_trailing_period((a[0] + "[" + last_genus[1:] + "]" +
-                                        " " + b + " " + c).strip()))
-            elif(plg and a[0] == plg):
-                nms.append(remove_trailing_period((a[0] + "[" + plg[1:] + "]" + " " +
-                                        b + " " + c).strip()))
+            name = remove_trailing_period((word1 + " " + word2 + " " + word3).strip())
+        if(name[1] == "." and name[2] == " "):
+            if(self._names_dict.has_key(name)):
+                self._names_list.append(remove_trailing_period((word1[0] + "[" + self._names_dict[name] + "]" + " " +
+                                        word2 + " " + word3).strip()))
+            elif(self._last_genus and word1[0] == self._last_genus[0]):
+                self._names_list.append(remove_trailing_period((word1[0] + "[" + self._last_genus[1:] + "]" +
+                                        " " + word2 + " " + word3).strip()))
+            elif(self._prev_last_genus and word1[0] == self._prev_last_genus):
+                self._names_list.append(remove_trailing_period((word1[0] + "[" + self._prev_last_genus[1:] + "]" + " " +
+                                        word2 + " " + word3).strip()))
             else:
-                nms.append(gr)
+                self._names_list.append(name)
         else:
-            nms.append(gr)
-            nhash[remove_trailing_period((a[0] + ". " + b + " " + c).strip())] = a[1:]
+            self._names_list.append(name)
+            self._names_dict[remove_trailing_period((word1[0] + ". " + word2 + " " + word3).strip())] = word1[1:]
 
 
-    def _getOffsets(self, oh, index, a, b, c):
-        # TODO rename method to _get_offsets
-        # TODO rename variables (oh, a, b, c, st)
-        # TODO could remove method from the class
-        """Returns a tuple with start and end positions of a found scientific name.
+    def _get_offsets(self, word1, word2 = '', word3 = ''):
+        """Returns word1 tuple with start and end positions of word1 found scientific name.
 
         Arguments:
-        oh -- a dictionary containing number of tokens as keys, and corresponding starting position
-        of a token in the document agaist whih neti-neti runs as a value
-        index -- index of the first token from the found scientific name.
-        a -- first element of a trigram
-        b -- second element of a trigram
-        c -- third element of a trigram
+        word1 -- first element of word1 trigram
+        word2 -- second element of word1 trigram
+        word3 -- third element of word1 trigram
         """
-        st = a + " " + b + " " + c
-        st = st.strip()
-        return oh[index], oh[index] + len(st)
+        name = word1 + " " + word2 + " " + word3
+        name = name.strip()
+        return self._index_dict[self._count], self._index_dict[self._count] + len(name)
 
 
-    def _endingCheck(self, tok):
-        # TODO rename method to _ending_check or similar
-        # TODO this doesn't really use the object since remdot does not
-        # TODO filter can be replaced with a list comprehension
-        """Check the ending of the token. It returns True if token has an ending
-        characteristic for a word from a canonical scientific name
+    def _has_uninomial_ending(self, word):
+        """Returns boolean
+        Checks the ending of a word. It returns True if the word has an ending
+        characteristic for a uninomial scientific name
 
         Arguments:
-        tok -- the token to check
+        word -- a word to check
         """
         endings = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
                     'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
                     'opsida', 'phyceae', 'phycidae', 'phyta', 'phytin']
-        if(len(filter(lambda x: remove_trailing_period(tok.lower()).endswith(x),
-                                            endings)) > 0):
-            return(True)
-        else:
-            return(False)
-
-
-    def embedNames(lst, filename):
-        # TODO rename to embed_names or similar
-        # TODO change variable names
-        # TODO self should be first method argument
-        """
-        Used to create a text with randomly placed scientific names in it
-        (perhaps for testing purposes).
-
-        Note: such a text will not have context relevant to the embedded
-        scientific names. I do not think this method is used anymore.
-
-        Arguments:
-        lst -- list of scientific names
-        filename -- file name with a text
-
-        """
-        f = open(os.path.dirname(os.path.realpath(__file__)) + "/"  +
-                filename).read()
-        sents = nltk.sent_tokenize(f)
-        tksents = [nltk.word_tokenize(a) for a in sents]
-        #esents = tksents
-        for l in lst:
-            i = random.randint(0, len(tksents) - 1)
-            tksents[i].insert(random.randint(0, len(tksents[i]) - 1), l)
-        sents = [" ".join(t) for t in tksents]
-        etext = " ".join(sents)
-        return(etext)
+        word = remove_trailing_period(word.lower())
+        for ending in endings:
+            if word.endswith(ending):
+                return True
+        return False
 
 
 if __name__ == '__main__':

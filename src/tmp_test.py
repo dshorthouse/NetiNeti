@@ -32,7 +32,6 @@ def variance(population):
 def standard_deviation(population):
     if len(population) == 1:
         return 0
-    end
     return math.sqrt(variance(population))
 
 
