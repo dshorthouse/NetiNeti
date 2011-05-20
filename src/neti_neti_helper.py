@@ -138,3 +138,44 @@ def remove_trailing_period(string):
         return string.rstrip(".")
     else:
         return string
+
+def has_uninomial_ending(word):
+    """Returns boolean
+    Checks the ending of a word. It returns True if the word has an ending
+    characteristic for a uninomial scientific name
+
+    Arguments:
+    word -- a word to check
+    """
+    endings = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
+                'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
+                'opsida', 'phyceae', 'phycidae', 'phyta', 'phytin']
+    word = remove_trailing_period(word.lower())
+    for ending in endings:
+        if word.endswith(ending):
+            return True
+    return False
+
+def resolve_abbreviated_names(names_list, names_set):
+    """
+    list of names is augmented with versions of names where genus part is abbreviated
+    """
+    name_regex = re.compile('^(.{1})([^ ]+)(.*)$') # (B)(etula) (verucosa verucosa)
+    names_dict = {}
+    resolved_names = []
+    abbr_names = [name for name in names_list if (name[1] == "." and name[2] == " ")]
+    full_names = names_set.difference(set(abbr_names))
+    full_names_list = list(full_names)
+    for name in full_names_list:
+        result = name_regex.match(name).groups()
+        names_dict[result[0] + "." + result[2]] = result[1]
+    print names_dict.keys()
+    for name in abbr_names:
+        if names_dict.has_key(name):
+            resolved_names.append(name[0] + "[" + names_dict[name] + "]" + " " + name[3:])
+        else:
+            resolved_names.append(name)
+    resolved_names += full_names_list
+    resolved_names.sort()
+    return resolved_names
+
