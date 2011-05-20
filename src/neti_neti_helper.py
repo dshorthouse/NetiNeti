@@ -3,8 +3,6 @@ import re
 rstrip = re.compile(u'^(.*?)([\W\d_]*)$', re.U | re.M)
 lstrip = re.compile(u'^([\W\d_]*)(.*)$', re.U | re.M)
 
-
-
 def left_strip(token):
     # TODO rename method
     # TODO rename variables
