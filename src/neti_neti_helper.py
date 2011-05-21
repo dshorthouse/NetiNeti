@@ -56,7 +56,7 @@ def right_strip(token):
     else:
         return(token[:j + 1], j + 1)
 
-def striptok(t):
+def strip_token(t):
     # TODO rename method
     # TODO rename variables
     """This combines left_strip and right_strip into one method.
@@ -92,19 +92,19 @@ def clean_token(first_word, second_word, third_word):
     third_word -- third element of a trigram
 
     """
-    res = [first_word, second_word, striptok(third_word)]
+    res = [first_word, second_word, strip_token(third_word)]
     if len(first_word) > 1:
         if first_word[-1] == ".":
             res[0] = left_strip(first_word)[0]
         else:
-            res[0] = striptok(first_word)
+            res[0] = strip_token(first_word)
     if len(second_word) > 1:
         if second_word[0] + second_word[-1] == "()":
             pass
         elif second_word[-1] == "-":
             res[1] = left_strip(second_word)[0]
         else:
-            res[1] = striptok(second_word)
+            res[1] = strip_token(second_word)
     return res
 
 def create_index(tokens):
