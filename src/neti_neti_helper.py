@@ -1,20 +1,27 @@
+# Machine Learning based approach to find scientific names
+# Collection of functions used by name finding algorithms
+
+"""
+neti_neti_helper.py
+
+Created by Lakshmi Manohar Akella.
+Copyright (c) 2010, 2011, Marine Biological Laboratory.
+All rights resersved.
+
+"""
 import re
 
-rstrip = re.compile(u'^(.*?)([\W\d_]*)$', re.U | re.M)
-lstrip = re.compile(u'^([\W\d_]*)(.*)$', re.U | re.M)
+#r_strip = re.compile(u'^(.*?)([\\W\\d_]*)$', re.U | re.M)
+#l_strip = re.compile(u'^([\\W\\d_]*)(.*)$', re.U | re.M)
 
 def left_strip(token):
-    # TODO rename method
-    # TODO rename variables
-    """This takes a token and strips non alpha characters off the left. It
+    """Takes a token and strips non alpha characters off the left. It
     returns the stripped string and the number of characters it stripped.
 
     Arguments:
     token -- a one word token which might have trailing non alpha characters
 
     """
-    #stripped, not_stripped = lstrip.match(token).groups()
-    #return not_stripped, len(stripped)
     i = 0
     while(i < len(token)):
         if(not token[i].isalpha()):
@@ -25,11 +32,7 @@ def left_strip(token):
         return('', 0)
     return(token[i:], i)
 
-# This strips non alpha characters from the right of a string
-# and returns the new string and the number of characters stripped negated
 def right_strip(token):
-    # TODO rename method
-    # TODO rename variables
     """This takes a token and strips non alpha characters off the right. It
     returns the stripped string and the number of characters it stripped.
 
@@ -40,36 +43,42 @@ def right_strip(token):
     t -- a one word token
 
     """
-
-    #not_stripped, stripped = rstrip.match(token).groups()
-    #return not_stripped, len(stripped)
-    j = -1
-    while(j >= -len(token)):
-        if(not token[j].isalpha()):
-            j = j - 1
+    i = -1
+    while(i >= -len(token)):
+        if(not token[i].isalpha()):
+            i = i - 1
         else:
             break
-    if(j == -1):
+    if(i == -1):
         return(token, 0)
-    elif(j == -(len(token) + 1)):
+    elif(i == -(len(token) + 1)):
         return('', 0)
     else:
-        return(token[:j + 1], j + 1)
+        return(token[:i + 1], i + 1)
 
-def strip_token(t):
-    # TODO rename method
-    # TODO rename variables
+def strip_token(token):
     """This combines left_strip and right_strip into one method.
     Returns back token without trailing non alpha characters
 
     Arguments:
-    t -- a one word token which might contain trailing non alpha characters
+    token -- a one word token which might contain trailing non alpha characters
          like parentheses, comma, etc...
 
     """
-    return(right_strip(left_strip(t)[0])[0])
+    return(right_strip(left_strip(token)[0])[0])
 
-def get_words_slice(words, word_index, first_char_index, second_char_index = None):
+def get_words_slice(words,
+        word_index,
+        first_char_index,
+        second_char_index = None):
+    """Returns a requested slice of a word, if possible, 'Null' otherwise
+
+    Arguments:
+    words -- list of words
+    word_index -- index of a word to slice
+    first_char_index -- start of the slice
+    second_char_index -- end of the slice
+    """
     result = 'Null'
     try:
         if (second_char_index == None):
@@ -78,9 +87,9 @@ def get_words_slice(words, word_index, first_char_index, second_char_index = Non
             result = words[word_index][first_char_index:second_char_index]
     except IndexError:
         pass
-    if result == []: result = 'Null'
+    if result == []:
+        result = 'Null'
     return result
-
 
 def clean_token(first_word, second_word, third_word):
     """Cleans the tokens.
@@ -132,7 +141,8 @@ def remove_trailing_period(string):
     string -- a string, usually the first element of a trigram
 
     """
-    #TODO: sometimes people abbreviate genus to 2 or 3 letters, would it be a problem?
+    #TODO: sometimes people abbreviate genus to 2 or 3 letters,
+    # would it be a problem?
 
     if len(string) > 2:
         return string.rstrip(".")
@@ -146,6 +156,7 @@ def has_uninomial_ending(word):
 
     Arguments:
     word -- a word to check
+
     """
     endings = ['aceae', 'ales', 'eae', 'idae', 'ina', 'inae', 'ineae',
                 'ini', 'mycetes', 'mycota', 'mycotina', 'oidea', 'oideae',
@@ -158,12 +169,16 @@ def has_uninomial_ending(word):
 
 def resolve_abbreviated_names(names_list, names_set):
     """
-    list of names is augmented with versions of names where genus part is abbreviated
+    list of names is augmented with versions of names where genus part
+    is abbreviated
+
     """
-    name_regex = re.compile('^(.{1})([^ ]+)(.*)$') # (B)(etula) (verucosa verucosa)
+    name_regex = re.compile('^(.{1})([^ ]+)(.*)$')
+    # (B)(etula) (verucosa verucosa)
     names_dict = {}
     resolved_names = []
-    abbr_names = [name for name in names_list if (name[1] == "." and name[2] == " ")]
+    abbr_names = [name for name in names_list if (name[1] == "."
+        and name[2] == " ")]
     full_names = names_set.difference(set(abbr_names))
     full_names_list = list(full_names)
     for name in full_names_list:
@@ -172,7 +187,8 @@ def resolve_abbreviated_names(names_list, names_set):
     print names_dict.keys()
     for name in abbr_names:
         if names_dict.has_key(name):
-            resolved_names.append(name[0] + "[" + names_dict[name] + "]" + " " + name[3:])
+            resolved_names.append(name[0] \
+                    + "[" + names_dict[name] + "]" + " " + name[3:])
         else:
             resolved_names.append(name)
     resolved_names += full_names_list

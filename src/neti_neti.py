@@ -28,7 +28,7 @@ class NameFinder():
         """Create the name finder object.
 
         Arguments:
-        model_object -- maybe the trained NetiNetiTrain object?
+        model_object -- the trained NetiNetiTrain object
         black_list_file -- file containing black-listed words
           (default "data/new-list.txt")
 
