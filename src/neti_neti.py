@@ -1,13 +1,15 @@
 # Machine Learning based approach to find scientific names
+# NameFinder uses a trained classifier to find and collect scientific
+# names from a document
 # Input: Any text preferably in Engish
 # Output : A list of scientific names
 
 """
-netineti.py
+neti_neti.py
 
 Created by Lakshmi Manohar Akella.
-Updated on October 27 2010 (ver 0.945).
-Copyright (c) 2010, Marine Biological Laboratory. All rights resersved.
+Copyright (c) 2010, 2011, Marine Biological Laboratory.
+All rights resersved.
 
 """
 import os
@@ -27,7 +29,8 @@ class NameFinder():
 
         Arguments:
         model_object -- maybe the trained NetiNetiTrain object?
-        black_list_file -- file containing black-listed words (default "data/new-list.txt")
+        black_list_file -- file containing black-listed words
+          (default "data/new-list.txt")
 
         """
         self._black_dict = {}
@@ -52,8 +55,8 @@ class NameFinder():
 
         Arguments:
         text -- input text
-        resolve_abbreviated_names -- boolean to add expanded version of an abbreviated genus (false by default) and not
-                      recommended for use
+        resolve_abbreviated_names -- boolean to add expanded version of an
+          abbreviated genus (false by default) and not recommended for use
         """
         self._text = text
         space_regex = re.compile('\s')
@@ -201,7 +204,8 @@ class NameFinder():
                         self._last_genus = self._names_list[i].split(" ")[0]
                         count = count + 1
                     else:
-                        self._prev_last_genus = self._names_list[i].split(" ")[0]
+                        self._prev_last_genus = \
+                                self._names_list[i].split(" ")[0]
                         break
                 i -= 1
 
