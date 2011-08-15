@@ -15,16 +15,14 @@ DEPENDENCIES
 ------------
 * nltk >= 2.09b3
 
-Neti-Neti taxon finder. 
+Neti-Neti taxon finder.
 Input: Any text preferably in English
 Output: A list of Scientific Names in the text
-For technical questions and comments about the approach, contact lakella@mbl.edu
-For questions regarding webservices, contact ashipunova@mbl.edu
 
-To run it: 
+To run it:
 $ python neti-server.py
 
-To use webservice: 
+To use webservice:
 $ ruby webservices/ruby/taxon_finder_web_service.rb
 
 API:
@@ -45,15 +43,15 @@ Those files should be in the same directory as a server.
 
 Using from (phyton) server:
 
-from netineti import *                                                                               
+from netineti import *
 
 # for short training set, about 2 min on slow machine
-NN = NetiNetiTrain("species_train.txt")                                                              
+NN = NetiNetiTrain("species_train.txt")
 
 # for long training set, about 20 min on slow machine
-# NN = NetiNetiTrain()                                                                               
+# NN = NetiNetiTrain()
 
-nf = nameFinder(NN)                                                                                  
+nf = nameFinder(NN)
 
 Example Urls to try:
 -------------------

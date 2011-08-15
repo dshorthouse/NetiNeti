@@ -20,9 +20,9 @@ class NetiNetiTrainer:
     """A class that defines the training algorithm and the training files
     and actually trains a natrual language toolkit object (nltk)
     """
-    def __init__(self, positive_training_file = "data/New_sp_contexts.txt",
-                 negative_training_file = "data/pictorialgeo.txt",
-                 sci_names_file = "data/millionnames.txt",
+    def __init__(self, positive_training_file = "data/names_in_contexts.txt",
+                 negative_training_file = "data/no_names.txt",
+                 sci_names_file = "data/white_list.txt",
                  learning_algorithm="NB",
                  sci_names_training_num = 10000,
                  negative_trigrams_num = 5000, context_span=1):
@@ -30,11 +30,11 @@ class NetiNetiTrainer:
 
         Keyword arguments:
         positive_training_file -- text with scientific names and a text that
-            contains them (default "data/New_sp_contexts.txt")
+            contains them (default "data/names_in_contexts.txt")
         negative_training_file -- text without scientific names
-            (default "data/pictorialgeo.txt")
+            (default "data/no_names.txt")
         sci_names_file -- text containing only scientific names -- one name
-            per line (default "data/millionnames.txt")
+            per line (default "data/white_list.txt")
         learning_algorithm -- the algorithm to train with
             (default "Naive Bayesian: NB")
         sci_names_training_num -- number of scientific names from
@@ -248,7 +248,7 @@ class NetiNetiTrainer:
         char_before_last_second = get_words_slice(words, 1, -2)
 
         #TODO BUG!!!! remove after refactoring
-        features["char-2_first_word_in_lc"]  = char_before_last_second
+        #features["char-2_first_word_in_lc"]  = char_before_last_second
         # end BUG
 
         features["char-2_second_word_in_lc"]  = (char_before_last_second
@@ -259,7 +259,7 @@ class NetiNetiTrainer:
                 in penultimate_chars)
 
         #TODO BUG!!!! remove after refactoring
-        features["char-2_first_word_in_pc"] = char_before_last_second
+        #features["char-2_first_word_in_pc"] = char_before_last_second
         # end BUG
 
         features["first_word_in_wl"]  = \

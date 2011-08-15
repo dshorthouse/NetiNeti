@@ -17,20 +17,20 @@ import nltk
 from neti_neti_helper import *
 
 class NameFinder():
-    """The meat of NetiNeti. This class uses the trained NetiNetiTrain model
-    and searches through text to find names.
+    """Uses the trained NetiNetiTrainer model and searches through text
+    to find names.
 
     This version supports offsets.
 
     """
 
-    def __init__(self, model_object, black_list_file='data/black-list.txt'):
-        """Create the name finder object.
+    def __init__(self, model_object, black_list_file='data/black_list.txt'):
+        """Creates the name finder object.
 
         Arguments:
-        model_object -- the trained NetiNetiTrain object
+        model_object -- a trained NetiNetiTrainer instance object
         black_list_file -- file containing black-listed words
-          (default "data/new-list.txt")
+          (default "data/black_list.txt")
 
         """
         self._black_dict = {}

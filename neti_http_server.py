@@ -3,7 +3,7 @@ import time
 import cgi
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-from src.netineti import NetiNetiTrain, nameFinder
+from src.netineti import NetiNetiTrainer, nameFinder
 
 config = ConfigParser.ConfigParser()
 config.read('config/neti_http_config.cfg')
