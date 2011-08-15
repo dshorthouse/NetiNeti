@@ -6,7 +6,7 @@ from src.netineti import TextClean
 class TestTextClean(unittest.TestCase):
     def setUp(self):
         self.tc = TextClean()
-    
+
     def test_left_strip_nothing(self):
         self.assertEqual(self.tc.leftStrip(""), ("", 0))
 
@@ -38,7 +38,7 @@ class TestTextClean(unittest.TestCase):
 
     def test_right_strip_spaces(self):
         self.assertEqual(self.tc.rightStrip("harpsichord and banjo"), ("harpsichord and banjo", 0))
-    
+
     def test_right_strip_numbers(self):
         self.assertEqual(self.tc.rightStrip("abcd12345"),("abcd", -5))
 
@@ -51,6 +51,6 @@ class TestTextClean(unittest.TestCase):
 
     def test_right_strip_other_chars(self):
         self.assertEqual(self.tc.rightStrip("bacon%$(!)(#"), ("bacon", -7))
-        
+
     def test_striptok_one_word(self):
         self.assertEqual(self.tc.striptok("  banana  "), "banana")
