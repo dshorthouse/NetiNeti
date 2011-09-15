@@ -20,7 +20,7 @@ class NetiNetiTrainer:
     """A class that defines the training algorithm and the training files
     and actually trains a natrual language toolkit object (nltk)
     """
-    def __init__(self, positive_training_file = "data/names_in_contexts.txt",
+    def __init__(self, positive_training_file = "data/names_in_context.txt",
                  negative_training_file = "data/no_names.txt",
                  sci_names_file = "data/white_list.txt",
                  learning_algorithm="NB",
@@ -30,7 +30,7 @@ class NetiNetiTrainer:
 
         Keyword arguments:
         positive_training_file -- text with scientific names and a text that
-            contains them (default "data/names_in_contexts.txt")
+            contains them (default "data/names_in_context.txt")
         negative_training_file -- text without scientific names
             (default "data/no_names.txt")
         sci_names_file -- text containing only scientific names -- one name
@@ -247,8 +247,8 @@ class NetiNetiTrainer:
                 in penultimate_chars)
         char_before_last_second = get_words_slice(words, 1, -2)
 
-        #TODO BUG!!!! remove after refactoring
-        #features["char-2_first_word_in_lc"]  = char_before_last_second
+        # TODO BUG!!!! remove after refactoring
+        # features["char-2_first_word_in_lc"]  = char_before_last_second
         # end BUG
 
         features["char-2_second_word_in_lc"]  = (char_before_last_second
@@ -258,8 +258,8 @@ class NetiNetiTrainer:
         features["char-2_second_word_in_pc"]  = (char_before_last_second
                 in penultimate_chars)
 
-        #TODO BUG!!!! remove after refactoring
-        #features["char-2_first_word_in_pc"] = char_before_last_second
+        # TODO BUG!!!! remove after refactoring
+        # features["char-2_first_word_in_pc"] = char_before_last_second
         # end BUG
 
         features["first_word_in_wl"]  = \
