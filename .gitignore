@@ -4,3 +4,5 @@
 virtualenv
 test_result_after*
 tags
+build
+neti_http_config.cfg
