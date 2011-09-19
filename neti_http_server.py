@@ -3,7 +3,8 @@ import time
 import cgi
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-from src.netineti import NetiNetiTrainer, nameFinder
+from src.neti_neti_trainer import NetiNetiTrainer
+from src.neti_neti import NameFinder
 
 config = ConfigParser.ConfigParser()
 config.read('config/neti_http_config.cfg')
@@ -37,6 +38,6 @@ def run(server_class=HTTPServer,
     httpd.serve_forever()
 
 if __name__ == '__main__':
-    NN = NetiNetiTrain()
-    nf = nameFinder(NN)
+    NN = NetiNetiTrainer()
+    nf = NameFinder(NN)
     run()

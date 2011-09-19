@@ -45,12 +45,12 @@ class NetiNetiTrainer:
             for context training (default 1)
 
         """
-        self._positive_training_file = positive_training_file
-        self._negative_training_file = negative_training_file
+        self._positive_training_file = os.path.dirname(os.path.realpath(__file__)) + "/" + positive_training_file
+        self._negative_training_file = os.path.dirname(os.path.realpath(__file__)) + "/" + negative_training_file
+        self._sci_names_file = os.path.dirname(os.path.realpath(__file__)) + "/" + sci_names_file
         self._sci_names_training_num = sci_names_training_num
         self._negative_trigrams_num = negative_trigrams_num
         self._context_span = context_span
-        self._sci_names_file = sci_names_file
         self.learning_algorithm = learning_algorithm
         self._model = None # model is added during the training
 
@@ -100,8 +100,7 @@ class NetiNetiTrainer:
 
         """
         featuresets = []
-        ndata = open(os.path.dirname(os.path.realpath(__file__)) + "/" +
-                     self._negative_training_file).read()
+        ndata = open(self._negative_training_file).read()
         ntokens = nltk.word_tokenize(ndata)
         neg_trigrams = nltk.trigrams(ntokens)
         index = -1
