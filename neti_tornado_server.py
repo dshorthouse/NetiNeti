@@ -7,7 +7,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 
-from src.neti_neti import NameFinder
+from src.neti_neti import NetiNeti
 from src.neti_neti_trainer import NetiNetiTrainer
 
 path =  os.path.abspath(os.path.dirname(__file__))
@@ -28,7 +28,7 @@ class MainHandler(tornado.web.RequestHandler):
           from_web_form = self.get_arguments('from_web_form')
         except:
           from_web_form = 'false'
-        names = nf.find_names(data, resolvedot=True)
+        names = nn.find_names(data, resolvedot=True)
 
 
         if from_web_form[0] == 'true':
@@ -47,7 +47,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.write(results)
 
 if __name__ == '__main__':
-    nf = NameFinder(NetiNetiTrainer())
+    nn = NetiNeti(NetiNetiTrainer())
     application = tornado.web.Application([
         (r"/", MainHandler),
     ])

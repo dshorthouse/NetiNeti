@@ -1,5 +1,5 @@
 # Machine Learning based approach to find scientific names
-# NameFinder uses a trained classifier to find and collect scientific
+# NetiNeti uses a trained classifier to find and collect scientific
 # names from a document
 # Input: Any text preferably in Engish
 # Output : A list of scientific names
@@ -16,7 +16,7 @@ import os
 import nltk
 from neti_neti_helper import *
 
-class NameFinder():
+class NetiNeti():
     """Uses the trained NetiNetiTrainer model and searches through text
     to find names.
 

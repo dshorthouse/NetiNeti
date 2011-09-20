@@ -4,7 +4,7 @@ import cgi
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from src.neti_neti_trainer import NetiNetiTrainer
-from src.neti_neti import NameFinder
+from src.neti_neti import NetiNeti
 
 config = ConfigParser.ConfigParser()
 config.read('config/neti_http_config.cfg')
@@ -27,7 +27,7 @@ class MyHandler(BaseHTTPRequestHandler):
                      })
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(nf.find_names(form['data'].value))
+        self.wfile.write(nn.find_names(form['data'].value))
         return
 
 def run(server_class=HTTPServer,
@@ -38,6 +38,6 @@ def run(server_class=HTTPServer,
     httpd.serve_forever()
 
 if __name__ == '__main__':
-    NN = NetiNetiTrainer()
-    nf = NameFinder(NN)
+    nnt = NetiNetiTrainer()
+    nn = NetiNeti(nnt)
     run()

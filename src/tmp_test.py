@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from neti_neti_trainer import NetiNetiTrainer
-from neti_neti import NameFinder
+from neti_neti import NetiNeti
 import subprocess
 import shlex
 import math
@@ -41,11 +41,11 @@ population = []
 for i in range(1, num_cycles):
     print "going through the cycle %s" % i
     time_start = time.clock()
-    neti_neti = NetiNetiTrainer()
+    classifier = NetiNetiTrainer()
     time_training = time.clock()
     print "Training time: %s" % (time_training - time_start)
-    name_finder = NameFinder(neti_neti)
-    result = name_finder.find_names(open("data/test.txt").read())
+    nn = NetiNeti(classifier)
+    result = nn.find_names(open("data/test.txt").read())
     print "Name finding time: %s" % (time.clock() - time_training)
 
     test_result_file = open("data/test_result_after_refactoring.txt", 'w')
