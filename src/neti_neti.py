@@ -13,6 +13,7 @@ All rights resersved.
 
 """
 import os
+import json
 import nltk
 from neti_neti_helper import *
 
@@ -48,7 +49,7 @@ class NetiNeti():
         self._prev_last_genus = ''
         self._count = -1
 
-    def find_names(self, text, resolve_abbreviated = False):
+    def find_names(self, text, resolve_abbreviated = False, output_format = 'python'):
         """
         Return a string of names concatenated with a newline and a list of
         offsets for each mention of the name in the original text.
@@ -63,15 +64,17 @@ class NetiNeti():
         tokens = space_regex.split(text) #any reason not to use nltk tokenizer?
 
         names_verbatim, offsets = self._find_names_in_tokens(tokens)
-        names_set = set(self._names_list)
-        names_list = list(names_set)
-        resolved_names = None
-        if resolve_abbreviated:
-            resolved_names = resolve_abbreviated_names(names_list, names_set)
-        else:
-            names_list.sort()
-            resolved_names = names_list
-        return "\n".join(resolved_names), names_verbatim, offsets
+        found_names = zip(names_verbatim, offsets)
+        result = []
+        entered_genera = []
+        for data in found_names:
+            name_data = { "verbatim" : data[0], 'scientificName' : get_scientific_name(entered_genera, data[0], resolve_abbreviated), "offsetStart": data[1][0], "offsetEnd" : data[1][1] }
+            result.append(name_data)
+        if output_format == 'json':
+            result = json.dumps({ 'names': result })
+        elif output_format == 'xml':
+            result = to_xml(result)
+        return result
 
     def _find_names_in_tokens(self, tokens):
         """Returns tuple

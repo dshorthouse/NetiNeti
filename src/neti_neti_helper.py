@@ -10,9 +10,40 @@ All rights resersved.
 
 """
 import re
+import xml.etree.ElementTree as ET
 
-#r_strip = re.compile(u'^(.*?)([\\W\\d_]*)$', re.U | re.M)
-#l_strip = re.compile(u'^([\\W\\d_]*)(.*)$', re.U | re.M)
+multispaces = re.compile('\s+')
+
+def to_xml(names_data):
+    names = ET.Element("names")
+    for name_data in names_data:
+        name = ET.SubElement(names, "name")
+        verbatim = ET.SubElement(name, "verbatim")
+        verbatim.text = name_data["verbatim"]
+        sci_name = ET.SubElement(name, "scientificName")
+        sci_name.text = name_data["scientificName"]
+        offset = ET.SubElement(name, "offset")
+        offset.set("start", str(name_data["offsetStart"]))
+        offset.set("end", str(name_data["offsetEnd"]))
+    return ET.tostring(names, "utf-8")
+
+def get_scientific_name(entered_genera, verbatim_name, resolve_abbreviated):
+    # cleans up found scientific name, optionally infers abbreviated genus
+    cleaned_name = remove_trailing_period(multispaces.sub(' ', verbatim_name))
+    if not resolve_abbreviated: return cleaned_name
+    name_parts = cleaned_name.split(' ')
+    if name_parts[0][-1] == '.':
+        abbr = name_parts[0][0:-1]
+        abbr_size = len(abbr)
+        for name in entered_genera:
+            if name[0:abbr_size] == abbr:
+                genus = name.split(' ')[0]
+                name_parts[0] = genus[0:abbr_size] + "[" + genus[abbr_size:] + "]"
+                break
+    else:
+       entered_genera.insert(0, name_parts[0])
+    scientific_name = ' '.join(name_parts)
+    return scientific_name
 
 def left_strip(token):
     """Takes a token and strips non alpha characters off the left. It
@@ -184,7 +215,6 @@ def resolve_abbreviated_names(names_list, names_set):
     for name in full_names_list:
         result = name_regex.match(name).groups()
         names_dict[result[0] + "." + result[2]] = result[1]
-    print names_dict.keys()
     for name in abbr_names:
         if names_dict.has_key(name):
             resolved_names.append(name[0] \
