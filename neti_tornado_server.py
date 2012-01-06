@@ -19,7 +19,7 @@ PORT = int(config.get('http_settings', 'port'))
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write('hello world')
+        self.write('<a href="http://en.wikipedia.org/wiki/Neti_neti">नेति नेति</a>')
 
     def post(self):
         self.set_header('Content-type', 'text/plain')
