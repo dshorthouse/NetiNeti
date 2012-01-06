@@ -59,6 +59,8 @@ class NetiNeti():
           abbreviated genus (false by default) and not recommended for use
         """
         self._text = text
+        self._index_dict = {}
+        self._count = -1
         space_regex = re.compile('\s')
         tokens = space_regex.split(text) #any reason not to use nltk tokenizer?
 

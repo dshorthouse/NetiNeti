@@ -38,6 +38,7 @@ def run(server_class=HTTPServer,
     httpd.serve_forever()
 
 if __name__ == '__main__':
+    print "Running NetiNeti Training, it might take a while..."
     nnt = NetiNetiTrainer()
     nn = NetiNeti(nnt)
     run()

@@ -38,15 +38,16 @@ def standard_deviation(population):
 
 population = []
 
+time_start = time.clock()
+classifier = NetiNetiTrainer()
+time_training = time.clock()
+print "Training time: %s" % (time_training - time_start)
+nn = NetiNeti(classifier)
 for i in range(1, num_cycles):
     print "going through the cycle %s" % i
     time_start = time.clock()
-    classifier = NetiNetiTrainer()
-    time_training = time.clock()
-    print "Training time: %s" % (time_training - time_start)
-    nn = NetiNeti(classifier)
     result = nn.find_names(open("data/test.txt").read())
-    print "Name finding time: %s" % (time.clock() - time_training)
+    print "Name finding time: %s" % (time.clock() - time_start)
 
     test_result_file = open("data/test_result_after_refactoring.txt", 'w')
 

@@ -28,10 +28,9 @@ class MainHandler(tornado.web.RequestHandler):
           from_web_form = self.get_arguments('from_web_form')
         except:
           from_web_form = 'false'
-        names = nn.find_names(data, resolvedot=True)
+        names = nn.find_names(data)
 
-
-        if from_web_form[0] == 'true':
+        if from_web_form == 'true':
           results = names[0]
         else:
           #pretty_names_list = names[0].split("\n")
@@ -39,15 +38,19 @@ class MainHandler(tornado.web.RequestHandler):
           offsets = names[2]
           
           #since full_names_list and offsets are in a 1:1 correspondence, this should work
+          print full_names_list
+          print offsets
           if len(full_names_list) == len(offsets):
-              results = '|'.join(["%s,%d" % (re.sub('/\s/', '', name),offsets[i][0]) for i, name in enumerate(full_names_list)])
+              results = '|'.join(["%s,%s,%s" % (re.sub('/\s/', '', name), offsets[i][0], offsets[i][1]) for i, name in enumerate(full_names_list)])
           else:
               raise Exception
 
         self.write(results)
 
 if __name__ == '__main__':
-    nn = NetiNeti(NetiNetiTrainer())
+    print ("Training NetiNeti, it will take a while...")
+    nnt = NetiNetiTrainer()
+    nn = NetiNeti(nnt)
     application = tornado.web.Application([
         (r"/", MainHandler),
     ])

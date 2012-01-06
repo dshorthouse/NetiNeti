@@ -1,7 +1,7 @@
 *.pyc
 *.swp
 *.bak
-virtualenv
+virtualenv*
 test_result_after*
 tags
 build
