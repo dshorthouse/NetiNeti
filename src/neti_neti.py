@@ -59,6 +59,8 @@ class NetiNeti():
           abbreviated genus (false by default) and not recommended for use
         """
         self._text = text
+        self._offsets_list = []
+        self._names_list = []
         self._index_dict = {}
         self._count = -1
         space_regex = re.compile('\s')
