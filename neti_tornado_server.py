@@ -28,7 +28,8 @@ class MainHandler(tornado.web.RequestHandler):
           from_web_form = self.get_arguments('from_web_form')
         except:
           from_web_form = 'false'
-        names = nn.find_names(data)
+        names = nn.find_names(data, resolve_abbreviated = True)
+        print names
 
         if from_web_form == 'true':
           results = names[0]
