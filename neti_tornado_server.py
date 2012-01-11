@@ -25,13 +25,12 @@ class MainHandler(tornado.web.RequestHandler):
         self.set_header('Content-type', 'text/plain')
         data = self.get_argument('data')
         try:
-          from_web_form = self.get_arguments('from_web_form')
+          from_web_form = self.get_arguments('from_web_form')[0] == 'true'
         except:
-          from_web_form = 'false'
+          from_web_form = False
         names = nn.find_names(data, resolve_abbreviated = True)
-        print names
 
-        if from_web_form == 'true':
+        if from_web_form:
           results = names[0]
         else:
           #pretty_names_list = names[0].split("\n")

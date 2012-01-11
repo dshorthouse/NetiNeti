@@ -114,7 +114,7 @@ class NetiNeti():
         they are appearing in the searched document
 
         """
-        verbatim_names = []
+        names_verbatim = []
         offsets = []
         for offset in self._offsets_list:
             name = self._text[offset[0]:offset[1]]
@@ -126,9 +126,10 @@ class NetiNeti():
                 offset1 = offset[0] + left_strip(name)[1]
                 offset2 = offset[1] + right_strip(name)[1]
             name = self._text[offset1:offset2]
-            verbatim_names.append(name)
+            names_verbatim.append(name)
             offsets.append((offset1, offset2))
-        return(verbatim_names, offsets)
+        
+        return(names_verbatim, offsets)
 
     def _walk_trigrams(self, trigrams, tokens):
         """Returns None
@@ -155,7 +156,7 @@ class NetiNeti():
                 if(self._is_a_name(bigram, tokens, self._count, 1)):
                     start, end = self._get_offsets(word1_orig, word2_orig)
                     self._offsets_list.append((start, end))
-                    self._resolve_abbreviation(word1, word2, word3)
+                    self._resolve_abbreviation(word1, word2, "")
             elif(self._is_like_uninomial(word1)):
                 if self._is_a_name(re.sub("\.", ". ",
                     remove_trailing_period(word1)), tokens, self._count, 0):
